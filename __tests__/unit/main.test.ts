@@ -1,5 +1,5 @@
 import { describe, it, afterEach, beforeEach, vi, expect } from 'vitest';
-import { Delays, greeter } from '../../src/main.js';
+import { Delays, greeter } from '../../src/app.js';
 
 describe('greeter function', () => {
   const name = 'John';

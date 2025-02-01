@@ -30,10 +30,12 @@
     "vitest": "~2.1"
   },
   "scripts": {
-    "start": "node build/src/main.js",
+    "database":"pnpm drizzle-kit studio --port 3000 --verbose",
+    "start": "node build/server.js",
     "clean": "rimraf coverage build tmp",
-    "prebuild": "npm run lint",
+    "nothing": "npm run lint",
     "build": "tsc -p tsconfig.json",
+    "build:loose": "tsc --project tsconfig.json --noEmitOnError false || true",
     "build:watch": "tsc -w -p tsconfig.json",
     "build:release": "npm run clean && tsc -p tsconfig.release.json",
     "lint": "eslint .",

@@ -6,23 +6,27 @@ import {
   integer,
   boolean,
   inet,
-  pgTable,
   uniqueIndex,
   index,
-  pgEnum,
+  pgSchema,
 } from 'drizzle-orm/pg-core';
+export const baseSchema = pgSchema('medisync');
 
-export const userRoles = pgEnum('user_roles', ['admin', 'editor', 'viewer']);
-export const terminologyStatus = pgEnum('terminology_status', [
-  'draft',
-  'reviewed',
-  'approved',
+export const userRoles = baseSchema.enum('user_roles', [
+  'Admin',
+  'Editor',
+  'Viewer',
+]);
+export const terminologyStatus = baseSchema.enum('terminology_status', [
+  'Draft',
+  'Reviewed',
+  'Approved',
 ]);
 
 // ---------------------------
 // 1. Users Table
 // ---------------------------
-export const users = pgTable(
+export const users = baseSchema.table(
   'users',
   {
     userId: serial('user_id').primaryKey(),
@@ -45,7 +49,7 @@ export const users = pgTable(
 // ---------------------------
 // 2. Categories Table
 // ---------------------------
-export const categories = pgTable(
+export const categories = baseSchema.table(
   'categories',
   {
     categoryId: serial('category_id').primaryKey(),
@@ -68,7 +72,7 @@ export const categories = pgTable(
 // ---------------------------
 // 3. Terminologies Table
 // ---------------------------
-export const terminologies = pgTable(
+export const terminologies = baseSchema.table(
   'terminologies',
   {
     termId: serial('term_id').primaryKey(),
@@ -81,7 +85,7 @@ export const terminologies = pgTable(
         onUpdate: 'cascade',
       })
       .notNull(),
-    status: terminologyStatus('status').default('draft').notNull(),
+    status: terminologyStatus('status').default('Draft').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
@@ -96,7 +100,7 @@ export const terminologies = pgTable(
 // 4. Terminology Versions Table
 // (Optional: For Versioning)
 // ---------------------------
-export const terminologyVersions = pgTable(
+export const terminologyVersions = baseSchema.table(
   'terminology_versions',
   {
     versionId: serial('version_id').primaryKey(),
@@ -109,7 +113,7 @@ export const terminologyVersions = pgTable(
     term: varchar('term', { length: 255 }).notNull(),
     definition: text('definition').notNull(),
     referenceUrl: varchar('reference_url', { length: 255 }),
-    status: terminologyStatus('status').default('draft').notNull(),
+    status: terminologyStatus('status').default('Draft').notNull(),
     versionNumber: integer('version_number').notNull(),
     changedBy: integer('changed_by').references(() => users.userId, {
       onDelete: 'set null',
@@ -126,7 +130,7 @@ export const terminologyVersions = pgTable(
 // ---------------------------
 // 5. Educational Insights Table
 // ---------------------------
-export const educationalInsights = pgTable(
+export const educationalInsights = baseSchema.table(
   'educational_insights',
   {
     insightId: serial('insight_id').primaryKey(),
@@ -156,7 +160,7 @@ export const educationalInsights = pgTable(
 // ---------------------------
 // 6. User_Favorites Table
 // ---------------------------
-export const userFavorites = pgTable(
+export const userFavorites = baseSchema.table(
   'user_favorites',
   {
     favoriteId: serial('favorite_id').primaryKey(),
@@ -186,7 +190,7 @@ export const userFavorites = pgTable(
 // ---------------------------
 // 7. Search Logs Table
 // ---------------------------
-export const searchLogs = pgTable(
+export const searchLogs = baseSchema.table(
   'search_logs',
   {
     logId: serial('log_id').primaryKey(),

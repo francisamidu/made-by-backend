@@ -200,8 +200,8 @@ export const searchLogs = baseSchema.table(
     }),
     searchQuery: varchar('search_query', { length: 255 }).notNull(),
     searchTime: timestamp('search_time').defaultNow().notNull(),
-    ipAddress: inet('ip_address'), // IPv4/IPv6 address
-    deviceInfo: varchar('device_info', { length: 255 }), // e.g., 'Chrome on Windows'
+    ipAddress: inet('ip_address'),
+    deviceInfo: varchar('device_info', { length: 255 }),
   },
   (table) => [
     uniqueIndex('log_unique').on(table.logId),

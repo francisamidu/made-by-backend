@@ -1,8 +1,12 @@
 import { Router } from 'express';
-import healthRouter from '@/handlers/app';
+import categoryRoutes from './categoryRoutes';
+import terminologyRoutes from './terminologyRoutes';
+import userRoutes from './userRoutes';
 
 const router = Router();
 
-router.use('/', healthRouter);
+router.use(categoryRoutes);
+router.use(terminologyRoutes);
+router.use(userRoutes);
 
 export default router;

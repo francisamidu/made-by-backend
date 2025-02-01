@@ -4,7 +4,7 @@ import { TableSchema, TUserRole, type TUser } from '@/types/schema';
 import { db } from '@/db';
 
 export class UserService {
-  async findAll(): Promise<TUser[] | null> {
+  static async findAll(): Promise<TUser[] | null> {
     const result = await db.select().from(users);
     return result.map((user) => ({
       ...user,
@@ -12,7 +12,7 @@ export class UserService {
     }));
   }
 
-  async findById(id: number): Promise<TUser | null> {
+  static async findById(id: number): Promise<TUser | null> {
     const result = await db
       .select()
       .from(users)
@@ -27,7 +27,7 @@ export class UserService {
     return null;
   }
 
-  async findByUsername(username: string): Promise<TUser | null> {
+  static async findByUsername(username: string): Promise<TUser | null> {
     const result = await db
       .select()
       .from(users)
@@ -42,7 +42,7 @@ export class UserService {
     return null;
   }
 
-  async findByEmail(email: string): Promise<TUser | null> {
+  static async findByEmail(email: string): Promise<TUser | null> {
     const result = await db
       .select()
       .from(users)
@@ -57,7 +57,7 @@ export class UserService {
     return null;
   }
 
-  async create(
+  static async create(
     data: Omit<TableSchema['users'], 'userId' | 'createdAt' | 'updatedAt'>,
   ): Promise<TUser> {
     const result = await db.insert(users).values(data).returning();
@@ -67,7 +67,7 @@ export class UserService {
     };
   }
 
-  async update(
+  static async update(
     id: number,
     data: Partial<
       Omit<TableSchema['users'], 'userId' | 'createdAt' | 'updatedAt'>
@@ -87,7 +87,7 @@ export class UserService {
     return null;
   }
 
-  async delete(id: number): Promise<boolean> {
+  static async delete(id: number): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.userId, id));
     return result.rowCount > 0;
   }

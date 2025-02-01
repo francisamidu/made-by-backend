@@ -4,7 +4,7 @@ import { TTerminology, TTerminologyStatus } from '@/types/schema';
 import { db } from '@/db';
 
 export class TerminologyService {
-  async findAll(): Promise<TTerminology[] | null> {
+  static async findAll(): Promise<TTerminology[] | null> {
     const result = await db.select().from(terminologies);
     return result.map((item) => ({
       ...item,
@@ -13,7 +13,7 @@ export class TerminologyService {
     }));
   }
 
-  async findById(id: number): Promise<TTerminology | null> {
+  static async findById(id: number): Promise<TTerminology | null> {
     const result = await db
       .select()
       .from(terminologies)
@@ -30,7 +30,7 @@ export class TerminologyService {
       : null;
   }
 
-  async findByTerm(term: string): Promise<TTerminology | null> {
+  static async findByTerm(term: string): Promise<TTerminology | null> {
     const result = await db
       .select()
       .from(terminologies)
@@ -47,7 +47,7 @@ export class TerminologyService {
       : null;
   }
 
-  async create(
+  static async create(
     data: Omit<TTerminology, 'termId' | 'createdAt' | 'updatedAt'>,
   ): Promise<TTerminology> {
     const result = await db.insert(terminologies).values(data).returning();
@@ -58,7 +58,7 @@ export class TerminologyService {
     };
   }
 
-  async update(
+  static async update(
     id: number,
     data: Partial<Omit<TTerminology, 'termId' | 'createdAt' | 'updatedAt'>>,
   ): Promise<TTerminology | null> {
@@ -78,14 +78,14 @@ export class TerminologyService {
       : null;
   }
 
-  async delete(id: number): Promise<boolean> {
+  static async delete(id: number): Promise<boolean> {
     const result = await db
       .delete(terminologies)
       .where(eq(terminologies.termId, id));
     return result.rowCount > 0;
   }
 
-  async findByCategory(categoryId: number): Promise<TTerminology[]> {
+  static async findByCategory(categoryId: number): Promise<TTerminology[]> {
     const result = await db
       .select()
       .from(terminologies)
@@ -97,7 +97,7 @@ export class TerminologyService {
     }));
   }
 
-  async findByStatus(
+  static async findByStatus(
     status: 'Draft' | 'Reviewed' | 'Approved',
   ): Promise<TTerminology[]> {
     const result = await db

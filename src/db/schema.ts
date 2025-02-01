@@ -4,12 +4,24 @@ import {
   varchar,
   timestamp,
   integer,
-  index,
-  uniqueIndex,
+  boolean,
+  inet,
   pgTable,
+  uniqueIndex,
+  index,
+  pgEnum,
 } from 'drizzle-orm/pg-core';
 
-// Users Table
+export const userRoles = pgEnum('user_roles', ['admin', 'editor', 'viewer']);
+export const terminologyStatus = pgEnum('terminology_status', [
+  'draft',
+  'reviewed',
+  'approved',
+]);
+
+// ---------------------------
+// 1. Users Table
+// ---------------------------
 export const users = pgTable(
   'users',
   {
@@ -17,69 +29,179 @@ export const users = pgTable(
     username: varchar('username', { length: 50 }).notNull(),
     passwordHash: varchar('password_hash', { length: 255 }).notNull(),
     email: varchar('email', { length: 100 }).notNull(),
-    role: varchar('role', { length: 50 }).notNull(),
-    createdAt: timestamp('created_at').defaultNow(),
+    role: userRoles('role').notNull(),
+    isEmailVerified: boolean('is_email_verified').default(false).notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (t) => [
-    uniqueIndex('username_idx').on(t.username),
-    uniqueIndex('email_idx').on(t.email),
+  (table) => [
+    uniqueIndex('username_idx').on(table.username),
+    uniqueIndex('email_idx').on(table.email),
+    index('is_active_idx').on(table.isActive),
   ],
 );
 
-// Categories Table
+// ---------------------------
+// 2. Categories Table
+// ---------------------------
 export const categories = pgTable(
   'categories',
   {
     categoryId: serial('category_id').primaryKey(),
     categoryName: varchar('category_name', { length: 100 }).notNull(),
-    createdAt: timestamp('created_at').defaultNow(),
+    description: text('description'),
+    iconUrl: varchar('icon_url', { length: 255 }),
+    parentCategoryId: integer('parent_category_id').references(
+      () => categories.categoryId,
+      { onDelete: 'set null', onUpdate: 'cascade' },
+    ),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (t) => [uniqueIndex('category_name_idx').on(t.categoryName)],
+  (table) => [
+    uniqueIndex('category_name_idx').on(table.categoryName),
+    index('parent_category_idx').on(table.parentCategoryId),
+  ],
 );
 
-// Terminologies Table
+// ---------------------------
+// 3. Terminologies Table
+// ---------------------------
 export const terminologies = pgTable(
   'terminologies',
   {
     termId: serial('term_id').primaryKey(),
     term: varchar('term', { length: 255 }).notNull(),
     definition: text('definition').notNull(),
-    referenceUrl: varchar('reference_url', { length: 255 }), // Optional reference URL
-    categoryId: integer('category_id').references(() => categories.categoryId),
-    createdAt: timestamp('created_at').defaultNow(),
+    referenceUrl: varchar('reference_url', { length: 255 }),
+    categoryId: integer('category_id')
+      .references(() => categories.categoryId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      })
+      .notNull(),
+    status: terminologyStatus('status').default('draft').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (t) => [uniqueIndex('term_idx').on(t.term)],
+  (table) => [
+    uniqueIndex('term_idx').on(table.term),
+    index('category_id_idx').on(table.categoryId),
+    // Full-Text Search Index can be added at the database level
+  ],
 );
 
-// Educational Insights Table
+// ---------------------------
+// 4. Terminology Versions Table
+// (Optional: For Versioning)
+// ---------------------------
+export const terminologyVersions = pgTable(
+  'terminology_versions',
+  {
+    versionId: serial('version_id').primaryKey(),
+    termId: integer('term_id')
+      .references(() => terminologies.termId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      })
+      .notNull(),
+    term: varchar('term', { length: 255 }).notNull(),
+    definition: text('definition').notNull(),
+    referenceUrl: varchar('reference_url', { length: 255 }),
+    status: terminologyStatus('status').default('draft').notNull(),
+    versionNumber: integer('version_number').notNull(),
+    changedBy: integer('changed_by').references(() => users.userId, {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('term_version_unique').on(table.termId, table.versionNumber),
+    index('term_id_idx').on(table.termId),
+  ],
+);
+
+// ---------------------------
+// 5. Educational Insights Table
+// ---------------------------
 export const educationalInsights = pgTable(
   'educational_insights',
   {
     insightId: serial('insight_id').primaryKey(),
-    termId: integer('term_id').references(() => terminologies.termId),
+    termId: integer('term_id')
+      .references(() => terminologies.termId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      })
+      .notNull(),
     content: text('content').notNull(),
+    contentType: varchar('content_type', { length: 50 })
+      .default('text')
+      .notNull(), // e.g., 'text', 'video', 'image'
+    mediaUrl: varchar('media_url', { length: 255 }), // Applicable if contentType is not 'text'
     source: varchar('source', { length: 255 }),
-    createdAt: timestamp('created_at').defaultNow(),
+    isApproved: boolean('is_approved').default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (t) => [index('term_id_idx').on(t.termId)],
+  (table) => [
+    uniqueIndex('insight_unique').on(table.insightId),
+    index('term_id_idx').on(table.termId),
+    index('is_approved_idx').on(table.isApproved),
+  ],
 );
 
-// User_Terminologies Table
-export const userTerminologies = pgTable('user_terminologies', {
-  userTermId: serial('user_term_id').primaryKey(),
-  userId: integer('user_id').references(() => users.userId),
-  termId: integer('term_id').references(() => terminologies.termId),
-  createdAt: timestamp('created_at').defaultNow(),
-});
+// ---------------------------
+// 6. User_Favorites Table
+// ---------------------------
+export const userFavorites = pgTable(
+  'user_favorites',
+  {
+    favoriteId: serial('favorite_id').primaryKey(),
+    userId: integer('user_id')
+      .references(() => users.userId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      })
+      .notNull(),
+    termId: integer('term_id')
+      .references(() => terminologies.termId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      })
+      .notNull(),
+    note: text('note'),
+    rating: integer('rating'), // e.g., 1-5 scale
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('user_term_unique').on(table.userId, table.termId),
+    index('user_id_idx').on(table.userId),
+    index('term_id_idx').on(table.termId),
+  ],
+);
 
-// Search Logs Table
+// ---------------------------
+// 7. Search Logs Table
+// ---------------------------
 export const searchLogs = pgTable(
   'search_logs',
   {
     logId: serial('log_id').primaryKey(),
-    userId: integer('user_id').references(() => users.userId),
+    userId: integer('user_id').references(() => users.userId, {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    }),
     searchQuery: varchar('search_query', { length: 255 }).notNull(),
-    searchTime: timestamp('search_time').defaultNow(),
+    searchTime: timestamp('search_time').defaultNow().notNull(),
+    ipAddress: inet('ip_address'), // IPv4/IPv6 address
+    deviceInfo: varchar('device_info', { length: 255 }), // e.g., 'Chrome on Windows'
   },
-  (t) => [index('search_query_idx').on(t.searchQuery)],
+  (table) => [
+    uniqueIndex('log_unique').on(table.logId),
+    index('search_query_idx').on(table.searchQuery),
+    index('search_time_idx').on(table.searchTime),
+  ],
 );

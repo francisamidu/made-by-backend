@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import logger from './logger';
+import loggerMiddleware from './middlewares/loggerMiddleware';
 import router from './routes';
 import errorHandler from './middlewares/errorHandler';
 
@@ -19,6 +19,7 @@ app.use('/api', router);
 // Health Check
 
 // Error Handling Middleware
+app.use(loggerMiddleware);
 app.use(errorHandler);
 
 export default app;

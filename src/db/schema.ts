@@ -97,37 +97,6 @@ export const terminologies = baseSchema.table(
 );
 
 // ---------------------------
-// 4. Terminology Versions Table
-// (Optional: For Versioning)
-// ---------------------------
-export const terminologyVersions = baseSchema.table(
-  'terminology_versions',
-  {
-    versionId: serial('version_id').primaryKey(),
-    termId: integer('term_id')
-      .references(() => terminologies.termId, {
-        onDelete: 'cascade',
-        onUpdate: 'cascade',
-      })
-      .notNull(),
-    term: varchar('term', { length: 255 }).notNull(),
-    definition: text('definition').notNull(),
-    referenceUrl: varchar('reference_url', { length: 255 }),
-    status: terminologyStatus('status').default('Draft').notNull(),
-    versionNumber: integer('version_number').notNull(),
-    changedBy: integer('changed_by').references(() => users.userId, {
-      onDelete: 'set null',
-      onUpdate: 'cascade',
-    }),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-  },
-  (table) => [
-    uniqueIndex('term_version_unique').on(table.termId, table.versionNumber),
-    index('term_id_idx').on(table.termId),
-  ],
-);
-
-// ---------------------------
 // 5. Educational Insights Table
 // ---------------------------
 export const educationalInsights = baseSchema.table(
@@ -154,36 +123,6 @@ export const educationalInsights = baseSchema.table(
     uniqueIndex('insight_unique').on(table.insightId),
     index('term_id_idx').on(table.termId),
     index('is_approved_idx').on(table.isApproved),
-  ],
-);
-
-// ---------------------------
-// 6. User_Favorites Table
-// ---------------------------
-export const userFavorites = baseSchema.table(
-  'user_favorites',
-  {
-    favoriteId: serial('favorite_id').primaryKey(),
-    userId: integer('user_id')
-      .references(() => users.userId, {
-        onDelete: 'cascade',
-        onUpdate: 'cascade',
-      })
-      .notNull(),
-    termId: integer('term_id')
-      .references(() => terminologies.termId, {
-        onDelete: 'cascade',
-        onUpdate: 'cascade',
-      })
-      .notNull(),
-    note: text('note'),
-    rating: integer('rating'), // e.g., 1-5 scale
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-  },
-  (table) => [
-    uniqueIndex('user_term_unique').on(table.userId, table.termId),
-    index('user_id_idx').on(table.userId),
-    index('term_id_idx').on(table.termId),
   ],
 );
 

@@ -3,8 +3,6 @@ import {
   educationalInsights,
   searchLogs,
   terminologies,
-  terminologyVersions,
-  userFavorites,
   users,
 } from '@/db/schema';
 import { InferSelectModel } from 'drizzle-orm';
@@ -14,8 +12,6 @@ export interface TableSchema {
   educationalInsights: InferSelectModel<typeof educationalInsights>;
   searchLogs: InferSelectModel<typeof searchLogs>;
   terminologies: InferSelectModel<typeof terminologies>;
-  terminologyVersions: InferSelectModel<typeof terminologyVersions>;
-  userFavorites: InferSelectModel<typeof userFavorites>;
   users: InferSelectModel<typeof users>;
 }
 
@@ -67,19 +63,6 @@ export interface TTerminology {
   status: TTerminologyStatus;
   createdAt: Date;
   updatedAt: Date;
-}
-
-// 4. Terminology Versions Table
-export interface TTerminologyVersion {
-  versionId: number;
-  termId: number;
-  term: string;
-  definition: string;
-  referenceUrl?: string;
-  status: TTerminologyStatus;
-  versionNumber: number;
-  changedBy?: number | null;
-  createdAt: Date;
 }
 
 // 5. Educational Insights Table

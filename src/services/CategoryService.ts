@@ -4,7 +4,9 @@ import { TableSchema, TCategory } from '@/types/schema';
 import { db } from '@/db';
 
 export class CategoryService {
-  static async findAll(): Promise<TCategory[] | null> {
+  static async findAll(): Promise<
+    TCategory[] | TableSchema['categories'] | null
+  > {
     return db.select().from(categories);
   }
 

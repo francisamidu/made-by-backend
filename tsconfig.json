@@ -1,31 +1,34 @@
 {
-
   "compilerOptions": {
-    "target": "es2022",
+    "target": "ESNext",
     "module": "ESNext",
-    "lib": ["ES2022", "DOM"],
-    "moduleResolution": "bundler",
-    "rootDir": ".",
-    "outDir": "build",
-    "allowSyntheticDefaultImports": true,
-    "importHelpers": true,
-    "alwaysStrict": true,
-    "sourceMap": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitAny": false,
-    "noImplicitThis": false,
-    "strictNullChecks": false,
-    "resolveJsonModule": true,
+    "moduleResolution": "Node",
+    "moduleDetection": "force",
+    "allowJs": true,
+    "isolatedModules": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "strict": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
+    "outDir": "./dist",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "$/*": [
+        "./*"
+      ]
     }
   },
-  "include": ["src", "server.ts"]}
+  "exclude": [
+    "node_modules",
+  ],
+  "include": [
+    "src/**/*.ts",
+  ],
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false
+  }
+}

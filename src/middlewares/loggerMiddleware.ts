@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import logger from '../logger';
+import logger from '@/logger';
 import { v6 as nanoid } from 'uuid'; // For generating unique request IDs
 
 const requestLogger = (req: Request, res: Response, next: NextFunction) => {

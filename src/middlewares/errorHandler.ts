@@ -9,7 +9,7 @@ export function errorHandler(
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction,
+  _next: NextFunction,
 ): void {
   // Log error details, including request info
   logger.error(`${err.name}: ${err.message}`, {
@@ -40,6 +40,7 @@ export function errorHandler(
 
   // Construct error response
   const response: ErrorResponse = {
+    details,
     success: false,
     status: statusCode,
     message,

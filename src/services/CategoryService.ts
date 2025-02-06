@@ -54,7 +54,7 @@ export class CategoryService {
     const result = await db
       .delete(categories)
       .where(eq(categories.categoryId, id));
-    return result.rowCount > 0;
+    return result?.rowCount ? result.rowCount > 0 : false;
   }
 
   static async findChildCategories(parentId: number): Promise<TCategory[]> {

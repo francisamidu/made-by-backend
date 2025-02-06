@@ -9,7 +9,11 @@ import {
   uniqueIndex,
   index,
   pgSchema,
+  type PgTable,
+  AnyPgColumn,
 } from 'drizzle-orm/pg-core';
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+
 export const baseSchema = pgSchema('medisync');
 
 export const userRoles = baseSchema.enum('user_roles', [
@@ -57,8 +61,11 @@ export const categories = baseSchema.table(
     description: text('description'),
     iconUrl: varchar('icon_url', { length: 255 }),
     parentCategoryId: integer('parent_category_id').references(
-      () => categories.categoryId,
-      { onDelete: 'set null', onUpdate: 'cascade' },
+      (): AnyPgColumn => categories.categoryId,
+      {
+        onDelete: 'set null',
+        onUpdate: 'cascade',
+      },
     ),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -148,3 +155,16 @@ export const searchLogs = baseSchema.table(
     index('search_time_idx').on(table.searchTime),
   ],
 );
+
+export type SearchLog = InferSelectModel<typeof searchLogs>;
+export type NewSearchLog = InferInsertModel<typeof searchLogs>;
+export type User = InferSelectModel<typeof users>;
+export type NewUser = InferInsertModel<typeof users>;
+export type EducationalInsight = InferSelectModel<typeof educationalInsights>;
+export type NewEducationalInsight = InferInsertModel<
+  typeof educationalInsights
+>;
+export type Terminology = InferSelectModel<typeof terminologies>;
+export type NewTerminology = InferInsertModel<typeof terminologies>;
+export type Category = InferSelectModel<typeof categories>;
+export type NewCategory = InferInsertModel<typeof categories>;

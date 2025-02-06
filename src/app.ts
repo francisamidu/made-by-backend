@@ -10,10 +10,12 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import listEndpoints from 'express-list-endpoints';
 
 // global config
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const routes = listEndpoints(router);
 
 const app = express();
 
@@ -28,6 +30,10 @@ app.use('/api', router);
 
 // Error Handling Middleware
 app.use(loggerMiddleware);
+
+app.use('/routes', (_, response) => {
+  response.json(routes);
+});
 
 // Swagger setup
 const swaggerOptions = {
@@ -44,7 +50,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: [`${__dirname}/routes/index.ts`], // files containing annotations as above
+  apis: [path.join(process.cwd(), './routes/*.ts')],
 };
 
 const swaggerDocs = swaggerJSDoc(swaggerOptions);
@@ -71,7 +77,7 @@ const server = app.listen(env.APP_PORT, () => {
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   logger.error('Uncaught Exception:', err);
-  process.exit(1); // Mandatory (as per Node.js docs)
+  process.exit(1);
 });
 
 // Handle unhandled promise rejections

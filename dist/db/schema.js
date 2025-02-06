@@ -36,7 +36,10 @@ export const categories = baseSchema.table('categories', {
     categoryName: varchar('category_name', { length: 100 }).notNull(),
     description: text('description'),
     iconUrl: varchar('icon_url', { length: 255 }),
-    parentCategoryId: integer('parent_category_id').references(() => categories.categoryId, { onDelete: 'set null', onUpdate: 'cascade' }),
+    parentCategoryId: integer('parent_category_id').references(() => categories.categoryId, {
+        onDelete: 'set null',
+        onUpdate: 'cascade',
+    }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => [

@@ -23,6 +23,9 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.21.2
+      express-list-endpoints:
+        specifier: ^7.1.1
+        version: 7.1.1
       express-validator:
         specifier: ^7.2.1
         version: 7.2.1
@@ -1546,6 +1549,10 @@ packages:
   expect-type@1.1.0:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
     engines: {node: '>=12.0.0'}
+
+  express-list-endpoints@7.1.1:
+    resolution: {integrity: sha512-SA6YHH1r6DrioJ4fFJNqiwu1FweGFqJZO9KBApMzwPosoSGPOX2AW0wiMepOXjojjEXDuP9whIvckomheErbJA==}
+    engines: {node: '>=18'}
 
   express-validator@7.2.1:
     resolution: {integrity: sha512-CjNE6aakfpuwGaHQZ3m8ltCG2Qvivd7RHtVMS/6nVxOM7xVGqr4bhflsm4+N5FP5zI7Zxp+Hae+9RE+o8e3ZOQ==}
@@ -3737,6 +3744,8 @@ snapshots:
       through: 2.3.8
 
   expect-type@1.1.0: {}
+
+  express-list-endpoints@7.1.1: {}
 
   express-validator@7.2.1:
     dependencies:

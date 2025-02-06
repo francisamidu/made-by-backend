@@ -24,7 +24,6 @@ export function errorHandler(
   let statusCode = 500;
   let message = 'Internal Server Error';
   let errors: string | undefined = undefined;
-  let details: any = undefined;
 
   // Handle known errors
   if (err instanceof AppError) {
@@ -33,14 +32,8 @@ export function errorHandler(
     errors = err.name;
   }
 
-  // In development, include stack trace
-  if (process.env.NODE_ENV === 'development') {
-    details = err.stack;
-  }
-
   // Construct error response
   const response: ErrorResponse = {
-    details,
     success: false,
     status: statusCode,
     message,

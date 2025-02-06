@@ -1,4 +1,4 @@
-import logger from '../logger';
+import logger from '@/logger';
 import { v6 as nanoid } from 'uuid'; // For generating unique request IDs
 const requestLogger = (req, res, next) => {
     const requestId = nanoid(); // Generate a unique request ID

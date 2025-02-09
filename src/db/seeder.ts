@@ -11,6 +11,11 @@ import {
 import { db } from '.';
 import logger from '@/logger';
 
+/**
+ * Seeds the users table with initial user accounts
+ * Creates admin, editor, and viewer accounts with predefined roles
+ * @returns Array of inserted user records
+ */
 async function seedUsers() {
   const userData = [
     {
@@ -43,6 +48,11 @@ async function seedUsers() {
   return insertedUsers;
 }
 
+/**
+ * Seeds the categories table with initial medical categories
+ * Creates base categories for organizing medical terms
+ * @returns Array of inserted category records
+ */
 async function seedCategories() {
   const categoryData = [
     {
@@ -64,6 +74,11 @@ async function seedCategories() {
   return insertedCategories;
 }
 
+/**
+ * Seeds the terminologies table with initial medical terms
+ * @param categoryMap - Mapping of category names to their IDs
+ * @returns Array of inserted terminology records
+ */
 async function seedTerminologies(categoryMap: { [k: string]: number }) {
   const terminologyData = [
     {
@@ -91,6 +106,10 @@ async function seedTerminologies(categoryMap: { [k: string]: number }) {
   return insertedTerms;
 }
 
+/**
+ * Seeds the educational insights table with initial content
+ * @param termMap - Mapping of terminology terms to their IDs
+ */
 async function seedEducationalInsights(termMap: { [k: string]: number }) {
   const insightData = [
     {
@@ -113,6 +132,10 @@ async function seedEducationalInsights(termMap: { [k: string]: number }) {
   await db.insert(educationalInsights).values(insightData);
 }
 
+/**
+ * Seeds the search logs table with sample search data
+ * @param userMap - Mapping of usernames to their IDs
+ */
 async function seedSearchLogs(userMap: { [k: string]: number }) {
   const logData = [
     {
@@ -132,6 +155,11 @@ async function seedSearchLogs(userMap: { [k: string]: number }) {
   await db.insert(searchLogs).values(logData);
 }
 
+/**
+ * Main seeding function that orchestrates the entire seeding process
+ * Executes seeding functions in the correct order to maintain referential integrity
+ * Handles the creation of all necessary mappings between related records
+ */
 async function seedDatabase() {
   const insertedUsers = await seedUsers();
   const userMap = Object.fromEntries(
@@ -158,4 +186,5 @@ async function seedDatabase() {
   console.log('Database seeded successfully!');
 }
 
+// Execute the seeding process
 seedDatabase().catch(console.error);

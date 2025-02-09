@@ -2,7 +2,16 @@ import type { Request, Response } from 'express';
 import { TerminologyService } from '../services/TerminologyService';
 import { BadRequestError, NotFoundError } from '../utils/errors';
 
+/**
+ * Handler class for terminology-related HTTP requests
+ * Processes incoming requests and returns appropriate responses
+ */
 export class TerminologyHandler {
+  /**
+   * Retrieves all terminology entries
+   * @param _req - Express request object (unused)
+   * @param res - Express response object
+   */
   static async getAllTerminologies(
     _req: Request,
     res: Response,
@@ -14,6 +23,13 @@ export class TerminologyHandler {
     });
   }
 
+  /**
+   * Retrieves a specific terminology entry by ID
+   * @param req - Express request object containing terminology ID
+   * @param res - Express response object
+   * @throws BadRequestError if ID is invalid
+   * @throws NotFoundError if terminology doesn't exist
+   */
   static async getTerminologyById(req: Request, res: Response): Promise<void> {
     const id = Number.parseInt(req.params.id);
     if (isNaN(id)) {
@@ -31,6 +47,11 @@ export class TerminologyHandler {
     });
   }
 
+  /**
+   * Creates a new terminology entry
+   * @param req - Express request object containing terminology data
+   * @param res - Express response object
+   */
   static async createTerminology(req: Request, res: Response): Promise<void> {
     const terminology = await TerminologyService.create(req.body);
     res.status(201).json({
@@ -39,6 +60,13 @@ export class TerminologyHandler {
     });
   }
 
+  /**
+   * Updates an existing terminology entry
+   * @param req - Express request object containing terminology ID and update data
+   * @param res - Express response object
+   * @throws BadRequestError if ID is invalid
+   * @throws NotFoundError if terminology doesn't exist
+   */
   static async updateTerminology(req: Request, res: Response): Promise<void> {
     const id = Number.parseInt(req.params.id);
     if (isNaN(id)) {
@@ -56,6 +84,13 @@ export class TerminologyHandler {
     });
   }
 
+  /**
+   * Deletes a terminology entry
+   * @param req - Express request object containing terminology ID
+   * @param res - Express response object
+   * @throws BadRequestError if ID is invalid
+   * @throws NotFoundError if terminology doesn't exist
+   */
   static async deleteTerminology(req: Request, res: Response): Promise<void> {
     const id = Number.parseInt(req.params.id);
     if (isNaN(id)) {

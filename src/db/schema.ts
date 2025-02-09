@@ -14,22 +14,35 @@ import {
 } from 'drizzle-orm/pg-core';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
+/**
+ * Database Schema Definition
+ * Defines the structure and relationships of all database tables
+ */
+
+// Create a custom schema namespace for the application
 export const baseSchema = pgSchema('medisync');
 
+/**
+ * Enum Definitions
+ * Define custom enumerated types for use across tables
+ */
 export const userRoles = baseSchema.enum('user_roles', [
   'Admin',
   'Editor',
   'Viewer',
 ]);
+
 export const terminologyStatus = baseSchema.enum('terminology_status', [
   'Draft',
   'Reviewed',
   'Approved',
 ]);
 
-// ---------------------------
-// 1. Users Table
-// ---------------------------
+/**
+ * Users Table
+ * Stores user account information and authentication details
+ * Includes roles, email verification status, and timestamps
+ */
 export const users = baseSchema.table(
   'users',
   {
@@ -50,9 +63,11 @@ export const users = baseSchema.table(
   ],
 );
 
-// ---------------------------
-// 2. Categories Table
-// ---------------------------
+/**
+ * Categories Table
+ * Manages hierarchical organization of medical terminologies
+ * Supports parent-child relationships between categories
+ */
 export const categories = baseSchema.table(
   'categories',
   {
@@ -76,9 +91,11 @@ export const categories = baseSchema.table(
   ],
 );
 
-// ---------------------------
-// 3. Terminologies Table
-// ---------------------------
+/**
+ * Terminologies Table
+ * Stores medical terms, their definitions, and metadata
+ * Links to categories and tracks approval status
+ */
 export const terminologies = baseSchema.table(
   'terminologies',
   {
@@ -103,9 +120,11 @@ export const terminologies = baseSchema.table(
   ],
 );
 
-// ---------------------------
-// 5. Educational Insights Table
-// ---------------------------
+/**
+ * Educational Insights Table
+ * Contains supplementary educational content for medical terms
+ * Supports multiple content types (text, video, image)
+ */
 export const educationalInsights = baseSchema.table(
   'educational_insights',
   {
@@ -133,9 +152,11 @@ export const educationalInsights = baseSchema.table(
   ],
 );
 
-// ---------------------------
-// 7. Search Logs Table
-// ---------------------------
+/**
+ * Search Logs Table
+ * Tracks user search activity and analytics
+ * Records search queries, timing, and user context
+ */
 export const searchLogs = baseSchema.table(
   'search_logs',
   {
@@ -156,6 +177,10 @@ export const searchLogs = baseSchema.table(
   ],
 );
 
+/**
+ * Type Definitions
+ * Generate TypeScript types from table schemas for type safety
+ */
 export type SearchLog = InferSelectModel<typeof searchLogs>;
 export type NewSearchLog = InferInsertModel<typeof searchLogs>;
 export type User = InferSelectModel<typeof users>;

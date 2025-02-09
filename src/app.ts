@@ -1,3 +1,4 @@
+// Import required dependencies
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -12,30 +13,46 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import listEndpoints from 'express-list-endpoints';
 
-// global config
+/**
+ * Global Configuration
+ * Set up __dirname equivalent for ES modules
+ */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const routes = listEndpoints(router);
 
+// Initialize Express application
 const app = express();
 
-// Middleware
+/**
+ * Middleware Configuration
+ * - express.json(): Parse JSON payloads
+ * - express.urlencoded(): Parse URL-encoded bodies
+ * - cors(): Enable Cross-Origin Resource Sharing
+ * - helmet(): Add security headers
+ */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(helmet());
 
-// Routes
+// Mount main API routes
 app.use('/api', router);
 
-// Error Handling Middleware
+// Apply logging middleware
 app.use(loggerMiddleware);
 
+/**
+ * Debug endpoint to list all available routes
+ */
 app.use('/routes', (_, response) => {
   response.json(routes);
 });
 
-// Swagger setup
+/**
+ * Swagger Documentation Configuration
+ * Sets up API documentation using OpenAPI 3.0.0 specification
+ */
 const swaggerOptions = {
   swaggerDefinition: {
     myapi: '3.0.0',
@@ -53,10 +70,14 @@ const swaggerOptions = {
   apis: [path.join(process.cwd(), './routes/*.ts')],
 };
 
+// Initialize and mount Swagger documentation
 const swaggerDocs = swaggerJSDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Handle 404 - Not Found
+/**
+ * 404 Handler
+ * Catches all unmatched routes and returns a standardized error response
+ */
 app.use((_req, res, _next) => {
   res.status(404).json({
     success: false,
@@ -65,22 +86,31 @@ app.use((_req, res, _next) => {
   });
 });
 
-// Global Error Handler (should be the last middleware)
+// Global error handler middleware
 app.use(errorHandler);
 
+/**
+ * Start the server and listen on configured port
+ */
 const server = app.listen(env.APP_PORT, () => {
   logger.info(
     `🚀 Medisync backend running on http://localhost:${env.APP_PORT}`,
   );
 });
 
-// Handle uncaught exceptions
+/**
+ * Error Handling for Uncaught Exceptions
+ * Logs the error and exits the process
+ */
 process.on('uncaughtException', (err) => {
   logger.error('Uncaught Exception:', err);
   process.exit(1);
 });
 
-// Handle unhandled promise rejections
+/**
+ * Error Handling for Unhandled Promise Rejections
+ * Logs the error, gracefully closes the server, and exits the process
+ */
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   server.close(() => {

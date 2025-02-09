@@ -9,11 +9,38 @@ import { SearchLogHandler } from '@/handlers/SearchLogs';
 const router = express.Router();
 
 /**
- * Search Log Routes:
- * GET /          - Retrieve all search logs
- * GET /:id       - Retrieve a specific search log by ID
+ * @swagger
+ * /api/search-logs:
+ *   get:
+ *     summary: Retrieve all search logs
+ *     tags: [Search Logs]
+ *     responses:
+ *       200:
+ *         description: List of search logs retrieved successfully
+ *       500:
+ *         description: Server error
  */
 router.get('/', catchAsync(SearchLogHandler.getAllSearchLogs));
+
+/**
+ * @swagger
+ * /api/search-logs/{id}:
+ *   get:
+ *     summary: Get search log by ID
+ *     tags: [Search Logs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Search Log ID
+ *     responses:
+ *       200:
+ *         description: Search log retrieved successfully
+ *       404:
+ *         description: Search log not found
+ */
 router.get('/:id', catchAsync(SearchLogHandler.getSearchLogById));
 
 export default router;

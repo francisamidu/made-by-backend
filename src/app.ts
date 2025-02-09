@@ -55,7 +55,7 @@ app.use('/routes', (_, response) => {
  */
 const swaggerOptions = {
   swaggerDefinition: {
-    myapi: '3.0.0',
+    openapi: '3.0.0',
     info: {
       title: 'Medisync API',
       version: '1.0.0',
@@ -63,11 +63,16 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost${env.APP_PORT}`,
+        url: `http://localhost:${env.APP_PORT}`,
       },
     ],
   },
-  apis: [path.join(process.cwd(), './routes/*.ts')],
+  apis: [
+    path.join(__dirname, './routes/*.ts'),
+    path.join(__dirname, './routes/*.js'),
+    path.join(__dirname, './handlers/*.ts'),
+    path.join(__dirname, './handlers/*.js'),
+  ],
 };
 
 // Initialize and mount Swagger documentation

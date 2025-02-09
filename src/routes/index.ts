@@ -6,9 +6,9 @@ import userRoutes from './userRoutes';
 
 const router = Router();
 
-router.use('/category', categoryRoutes);
+router.use('/categories', categoryRoutes);
 router.use('/search-logs', searchLogsRoutes);
-router.use('/terminology', terminologyRoutes);
-router.use('/user', userRoutes);
+router.use('/terminologies', terminologyRoutes);
+router.use('/users', userRoutes);
 
 export default router;

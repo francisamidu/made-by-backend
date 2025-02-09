@@ -72,7 +72,11 @@ export class TerminologyService {
   static async create(
     data: Omit<TTerminology, 'termId' | 'createdAt' | 'updatedAt'>,
   ): Promise<TTerminology> {
-    const result = await db.insert(terminologies).values(data).returning();
+    const dbData = {
+      ...data,
+      status: data.status as unknown as 'Draft' | 'Reviewed' | 'Approved',
+    };
+    const result = await db.insert(terminologies).values(dbData).returning();
     return {
       ...result[0],
       status:
@@ -90,9 +94,15 @@ export class TerminologyService {
     id: number,
     data: Partial<Omit<TTerminology, 'termId' | 'createdAt' | 'updatedAt'>>,
   ): Promise<TTerminology | null> {
+    const dbData = {
+      ...data,
+      status: data.status
+        ? (data.status as unknown as 'Draft' | 'Reviewed' | 'Approved')
+        : undefined,
+    };
     const result = await db
       .update(terminologies)
-      .set(data)
+      .set(dbData)
       .where(eq(terminologies.termId, id))
       .returning();
     return result.length > 0
@@ -114,8 +124,9 @@ export class TerminologyService {
   static async delete(id: number): Promise<boolean> {
     const result = await db
       .delete(terminologies)
-      .where(eq(terminologies.termId, id));
-    return result.rowCount > 0;
+      .where(eq(terminologies.termId, id))
+      .returning();
+    return result.length > 0;
   }
 
   /**

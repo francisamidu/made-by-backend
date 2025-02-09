@@ -58,7 +58,7 @@ export interface TTerminology {
   termId: number;
   term: string;
   definition: string;
-  referenceUrl?: string;
+  referenceUrl?: string | null;
   categoryId: number;
   status: TTerminologyStatus;
   createdAt: Date;

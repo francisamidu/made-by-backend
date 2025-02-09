@@ -19,7 +19,7 @@ export class SearchLogHandler {
 
     const SearchLog = await SearchLogService.findByUser(id);
     if (!SearchLog) {
-      throw new NotFoundError(`SearchLog with ID ${id} not found`);
+      throw new NotFoundError(`Search Log with ID ${id} not found`);
     }
 
     res.status(200).json({

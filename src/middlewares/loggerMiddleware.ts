@@ -3,7 +3,7 @@ import logger from '@/logger';
 import { v6 as nanoid } from 'uuid'; // For generating unique request IDs
 
 const requestLogger = (req: Request, res: Response, next: NextFunction) => {
-  const requestId = nanoid(); // Generate a unique request ID
+  const requestId = nanoid();
   const startTime = process.hrtime();
 
   // Attach requestId to response headers (for tracing logs)
@@ -15,7 +15,7 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
     url: req.originalUrl,
     ip: req.ip,
     userAgent: req.headers['user-agent'],
-    body: req.body, // Be cautious with logging sensitive data
+    body: req.body,
     query: req.query,
     timestamp: new Date().toISOString(),
   });

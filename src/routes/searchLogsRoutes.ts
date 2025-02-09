@@ -1,6 +1,6 @@
 import express from 'express';
 import catchAsync from '@/utils/catchAsync';
-import { SearchLogHandler } from '@/handlers/searchLogs';
+import { SearchLogHandler } from '@/handlers/SearchLogs';
 
 const router = express.Router();
 

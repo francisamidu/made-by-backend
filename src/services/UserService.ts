@@ -2,57 +2,65 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { TableSchema, TUserRole, type TUser } from '@/types/schema';
 import { db } from '@/db';
+import { sanitizeUser } from '@/utils/sanitizeUser';
 
 export class UserService {
-  static async findAll(): Promise<TUser[] | null> {
+  static async findAll(): Promise<Partial<TUser>[] | null> {
     const result = await db.select().from(users);
-    return result.map((user) => ({
-      ...user,
-      role: TUserRole[user.role as keyof typeof TUserRole],
-    }));
+    const results = result.map((user) =>
+      sanitizeUser({
+        ...user,
+        role: TUserRole[user.role as keyof typeof TUserRole],
+      }),
+    );
+    return results.every((result) => result !== null) ? results : null;
   }
 
-  static async findById(id: number): Promise<TUser | null> {
+  static async findById(id: number): Promise<TUser | Partial<TUser> | null> {
     const result = await db
       .select()
       .from(users)
       .where(eq(users.userId, id))
       .limit(1);
     if (result[0]) {
-      return {
+      return sanitizeUser({
         ...result[0],
         role: TUserRole[result[0].role as keyof typeof TUserRole],
-      };
+      });
     }
     return null;
   }
 
-  static async findByUsername(username: string): Promise<TUser | null> {
+  static async findByUsername(
+    username: string,
+  ): Promise<TUser | Partial<TUser> | null> {
     const result = await db
       .select()
       .from(users)
       .where(eq(users.username, username))
       .limit(1);
     if (result[0]) {
-      return {
+      return sanitizeUser({
         ...result[0],
         role: TUserRole[result[0].role as keyof typeof TUserRole],
-      };
+      });
     }
     return null;
   }
 
-  static async findByEmail(email: string): Promise<TUser | null> {
+  static async findByEmail(
+    email: string,
+  ): Promise<TUser | Partial<TUser> | null> {
     const result = await db
       .select()
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
     if (result[0]) {
-      return {
+      return sanitizeUser({
         ...result[0],
         role: TUserRole[result[0].role as keyof typeof TUserRole],
-      };
+      });
     }
     return null;
   }
@@ -89,6 +97,6 @@ export class UserService {
 
   static async delete(id: number): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.userId, id));
-    return result.rowCount > 0;
+    return result.rowCount ? result.rowCount > 0 : false;
   }
 }

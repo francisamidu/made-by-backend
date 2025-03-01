@@ -1,190 +1,163 @@
-import {
-  users,
-  categories,
-  terminologies,
-  educationalInsights,
-  searchLogs,
-  userRoles,
-  terminologyStatus,
-  NewUser,
-} from './schema'; // Import your schema definitions
 import { db } from '.';
+import { creators, projects } from './schema';
 import logger from '@/logger';
 
 /**
- * Seeds the users table with initial user accounts
- * Creates admin, editor, and viewer accounts with predefined roles
- * @returns Array of inserted user records
+ * Seeds the creators table with initial creator accounts
+ * Creates sample creator profiles with various professional backgrounds
  */
-async function seedUsers() {
-  const userData = [
+async function seedCreators() {
+  const creatorData = [
     {
-      username: 'admin',
-      passwordHash: 'hashedpassword1',
-      email: 'admin@example.com',
-      role: userRoles.enumValues[0],
-      isEmailVerified: true,
-      isActive: true,
+      name: 'Ronas IT | UI',
+      avatar: 'https://example.com/avatars/ronas.png',
+      bio: "Award-winning UI/UX design agency specializing in healthcare digital solutions. With over 10 years of experience, we've helped transform patient care through intuitive design.",
+      username: 'ronasit',
+      location: 'Global',
+      email: 'contact@ronasit.com',
+      bannerImage: '@/assets/banner.jpg',
+      isAvailableForHire: true,
+      stats: {
+        projectViews: 134000,
+        appreciations: 145,
+        followers: 5200,
+        following: 320,
+      },
+      socialLinks: {
+        linkedln: 'ronasit',
+        github: 'ronasit',
+        dribbble: 'ronasit',
+      },
+      professionalInfo: {
+        title: 'UI/UX Design Agency',
+        skills: [
+          'UI Design',
+          'UX Design',
+          'Web Development',
+          'Healthcare Solutions',
+        ],
+        tools: ['Figma', 'Adobe XD', 'Sketch'],
+        collaborators: ['Healthcare Providers', 'Tech Companies'],
+        portfolioLink: 'https://ronasit.com',
+      },
     },
     {
-      username: 'editor',
-      passwordHash: 'hashedpassword2',
-      email: 'editor@example.com',
-      role: userRoles.enumValues[1],
-      isEmailVerified: true,
-      isActive: true,
-    },
-    {
-      username: 'viewer',
-      passwordHash: 'hashedpassword3',
-      email: 'viewer@example.com',
-      role: userRoles.enumValues[2],
-      isEmailVerified: true,
-      isActive: true,
+      name: 'Kakha Kakhadzen',
+      avatar: 'https://example.com/avatars/kakha.png',
+      bio: 'Passionate logo designer with a minimalist approach. Creating distinctive brand identities for over 8 years.',
+      username: 'kakhakakhadzen',
+      location: 'Georgia',
+      email: 'kakha@design.com',
+      bannerImage: '@/assets/banner.jpg',
+      isAvailableForHire: true,
+      stats: {
+        projectViews: 41000,
+        appreciations: 48,
+        followers: 2100,
+        following: 150,
+      },
+      socialLinks: {
+        linkedln: 'kakhakakhadzen',
+        github: 'kakhakakhadzen',
+      },
+      professionalInfo: {
+        title: 'Logo Designer & Brand Identity Expert',
+        skills: ['Logo Design', 'Typography', 'Brand Identity', 'Vector Art'],
+        tools: ['Adobe Illustrator', 'Adobe Photoshop'],
+        collaborators: ['Startups', 'Design Studios'],
+        portfolioLink: 'https://kakha.design',
+      },
     },
   ];
 
-  const insertedUsers = await db.insert(users).values(userData).returning();
-  return insertedUsers;
-}
-
-/**
- * Seeds the categories table with initial medical categories
- * Creates base categories for organizing medical terms
- * @returns Array of inserted category records
- */
-async function seedCategories() {
-  const categoryData = [
-    {
-      categoryName: 'Anatomy',
-      description: 'Terms related to human anatomy',
-      iconUrl: 'http://example.com/icon1.png',
-    },
-    {
-      categoryName: 'Pharmacology',
-      description: 'Terms related to drugs and medications',
-      iconUrl: 'http://example.com/icon2.png',
-    },
-  ];
-
-  const insertedCategories = await db
-    .insert(categories)
-    .values(categoryData)
+  const insertedCreators = await db
+    .insert(creators)
+    .values(creatorData)
     .returning();
-  return insertedCategories;
+  return insertedCreators;
 }
 
 /**
- * Seeds the terminologies table with initial medical terms
- * @param categoryMap - Mapping of category names to their IDs
- * @returns Array of inserted terminology records
+ * Seeds the projects table with initial projects
+ * @param creatorMap - Mapping of creator usernames to their IDs
  */
-async function seedTerminologies(categoryMap: { [k: string]: number }) {
-  const terminologyData = [
+async function seedProjects(creatorMap: { [k: string]: string }) {
+  const projectData = [
     {
-      term: 'Aorta',
-      definition:
-        'The main artery that carries blood away from your heart to the rest of your body.',
-      referenceUrl: 'http://example.com/aorta',
-      categoryId: categoryMap['Anatomy'],
-      status: terminologyStatus.enumValues[2],
+      title: 'Healthcare Website Design',
+      description:
+        'A modern and accessible healthcare platform designed to improve patient experience. Features include appointment scheduling, telemedicine integration, and patient portal with clean UI/UX principles.',
+      creatorId: creatorMap['ronasit'],
+      images: [
+        'https://example.com/projects/healthcare1.png',
+        'https://example.com/projects/healthcare2.png',
+      ],
+      likes: 145,
+      tags: ['healthcare', 'ui-design', 'web-development', 'accessibility'],
+      views: 13400,
     },
     {
-      term: 'Antibiotic',
-      definition:
-        'A type of medicine that inhibits the growth of or destroys microorganisms.',
-      referenceUrl: 'http://example.com/antibiotic',
-      categoryId: categoryMap['Pharmacology'],
-      status: terminologyStatus.enumValues[1],
+      title: 'Letter A Logo',
+      description:
+        'Minimalist logo design featuring a geometric interpretation of the letter A. Perfect for modern brands, with careful attention to balance, scalability, and versatility across different mediums.',
+      creatorId: creatorMap['kakhakakhadzen'],
+      images: [
+        'https://example.com/projects/logo1.png',
+        'https://example.com/projects/logo2.png',
+      ],
+      likes: 48,
+      tags: ['logo-design', 'branding', 'minimalist', 'typography'],
+      views: 4100,
     },
   ];
 
-  const insertedTerms = await db
-    .insert(terminologies)
-    .values(terminologyData)
+  const insertedProjects = await db
+    .insert(projects)
+    .values(projectData)
     .returning();
-  return insertedTerms;
-}
-
-/**
- * Seeds the educational insights table with initial content
- * @param termMap - Mapping of terminology terms to their IDs
- */
-async function seedEducationalInsights(termMap: { [k: string]: number }) {
-  const insightData = [
-    {
-      termId: termMap['Aorta'],
-      content: 'The aorta is divided into four sections...',
-      contentType: 'text',
-      source: 'Medical Textbook',
-      isApproved: true,
-    },
-    {
-      termId: termMap['Antibiotic'],
-      content:
-        'Antibiotics are among the most frequently prescribed medications...',
-      contentType: 'text',
-      source: 'Pharmaceutical Journal',
-      isApproved: true,
-    },
-  ];
-
-  await db.insert(educationalInsights).values(insightData);
-}
-
-/**
- * Seeds the search logs table with sample search data
- * @param userMap - Mapping of usernames to their IDs
- */
-async function seedSearchLogs(userMap: { [k: string]: number }) {
-  const logData = [
-    {
-      userId: userMap['admin'],
-      searchQuery: 'Aorta',
-      ipAddress: '192.168.1.1',
-      deviceInfo: 'Desktop Chrome',
-    },
-    {
-      userId: userMap['editor'],
-      searchQuery: 'Antibiotic',
-      ipAddress: '192.168.1.2',
-      deviceInfo: 'Mobile Safari',
-    },
-  ];
-
-  await db.insert(searchLogs).values(logData);
+  return insertedProjects;
 }
 
 /**
  * Main seeding function that orchestrates the entire seeding process
  * Executes seeding functions in the correct order to maintain referential integrity
- * Handles the creation of all necessary mappings between related records
  */
 async function seedDatabase() {
-  const insertedUsers = await seedUsers();
-  const userMap = Object.fromEntries(
-    insertedUsers.map((user) => [user.username, user.userId]),
-  );
+  try {
+    // First seed creators
+    const insertedCreators = await seedCreators();
+    logger.info('Creators seeded successfully');
 
-  const insertedCategories = await seedCategories();
-  const categoryMap = Object.fromEntries(
-    insertedCategories.map((category) => [
-      category.categoryName,
-      category.categoryId,
-    ]),
-  );
-  logger.info(insertedUsers);
+    // Create mapping of usernames to creator IDs
+    const creatorMap = Object.fromEntries(
+      insertedCreators.map((creator) => [creator.username, creator.id]),
+    );
 
-  const insertedTerms = await seedTerminologies(categoryMap);
-  const termMap = Object.fromEntries(
-    insertedTerms.map((term) => [term.term, term.termId]),
-  );
+    // Then seed projects using creator IDs
+    await seedProjects(creatorMap);
+    logger.info('Projects seeded successfully');
 
-  await seedEducationalInsights(termMap);
-  await seedSearchLogs(userMap);
-
-  console.log('Database seeded successfully!');
+    console.log('Database seeded successfully!');
+  } catch (error) {
+    logger.error('Error seeding database:', error);
+    throw error;
+  }
 }
 
 // Execute the seeding process
-seedDatabase().catch(console.error);
+seedDatabase().catch((error) => {
+  logger.error('Failed to seed database:', error);
+  process.exit(1);
+});
+
+// Add a cleanup function for testing environments
+export async function cleanup() {
+  try {
+    await db.delete(projects);
+    await db.delete(creators);
+    logger.info('Database cleaned up successfully');
+  } catch (error) {
+    logger.error('Error cleaning up database:', error);
+    throw error;
+  }
+}

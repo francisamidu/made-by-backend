@@ -5,7 +5,8 @@ import {
   timestamp,
   integer,
   boolean,
-  inet,
+  jsonb,
+  uuid,
   uniqueIndex,
   index,
   pgSchema,
@@ -16,164 +17,162 @@ import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
 /**
  * Database Schema Definition
- * Defines the structure and relationships of all database tables
+ * Defines the structure and relationships for the MadeBy creative platform
  */
 
 // Create a custom schema namespace for the application
-export const baseSchema = pgSchema('medisync');
+export const baseSchema = pgSchema('madeby');
 
 /**
- * Enum Definitions
- * Define custom enumerated types for use across tables
+ * Creators Table
+ * Stores professional creator profiles and their metadata
+ * Includes personal info, stats, and professional details
  */
-export const userRoles = baseSchema.enum('user_roles', [
-  'Admin',
-  'Editor',
-  'Viewer',
-]);
-
-export const terminologyStatus = baseSchema.enum('terminology_status', [
-  'Draft',
-  'Reviewed',
-  'Approved',
-]);
-
-/**
- * Users Table
- * Stores user account information and authentication details
- * Includes roles, email verification status, and timestamps
- */
-export const users = baseSchema.table(
-  'users',
+export const creators = baseSchema.table(
+  'creators',
   {
-    userId: serial('user_id').primaryKey(),
-    username: varchar('username', { length: 50 }).notNull(),
-    passwordHash: varchar('password_hash', { length: 255 }).notNull(),
-    email: varchar('email', { length: 100 }).notNull(),
-    role: userRoles('role').notNull(),
-    isEmailVerified: boolean('is_email_verified').default(false).notNull(),
-    isActive: boolean('is_active').default(true).notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: varchar('name', { length: 100 }).notNull(),
+    avatar: text('avatar').notNull(),
+    bio: text('bio'),
+    username: varchar('username', { length: 50 }).unique(),
+    location: varchar('location', { length: 100 }),
+    email: varchar('email', { length: 100 }).unique(),
+    bannerImage: text('banner_image'),
+    isAvailableForHire: boolean('is_available_for_hire').default(false),
+
+    // Stats stored as JSONB for flexible querying
+    stats: jsonb('stats')
+      .default({
+        projectViews: 0,
+        appreciations: 0,
+        followers: 0,
+        following: 0,
+      })
+      .notNull(),
+
+    // Social links stored as JSONB
+    socialLinks: jsonb('social_links').default({}).notNull(),
+
+    // Professional info stored as JSONB
+    professionalInfo: jsonb('professional_info')
+      .default({
+        title: '',
+        skills: [],
+        tools: [],
+        collaborators: [],
+        portfolioLink: '',
+      })
+      .notNull(),
+
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
   (table) => [
     uniqueIndex('username_idx').on(table.username),
     uniqueIndex('email_idx').on(table.email),
-    index('is_active_idx').on(table.isActive),
+    index('location_idx').on(table.location),
+    index('available_idx').on(table.isAvailableForHire),
   ],
 );
 
 /**
- * Categories Table
- * Manages hierarchical organization of medical terminologies
- * Supports parent-child relationships between categories
+ * Projects Table
+ * Stores creative projects and their associated metadata
+ * Links to creators and includes engagement metrics
  */
-export const categories = baseSchema.table(
-  'categories',
+export const projects = baseSchema.table(
+  'projects',
   {
-    categoryId: serial('category_id').primaryKey(),
-    categoryName: varchar('category_name', { length: 100 }).notNull(),
-    description: text('description'),
-    iconUrl: varchar('icon_url', { length: 255 }),
-    parentCategoryId: integer('parent_category_id').references(
-      (): AnyPgColumn => categories.categoryId,
-      {
-        onDelete: 'set null',
-        onUpdate: 'cascade',
-      },
-    ),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  },
-  (table) => [
-    uniqueIndex('category_name_idx').on(table.categoryName),
-    index('parent_category_idx').on(table.parentCategoryId),
-  ],
-);
-
-/**
- * Terminologies Table
- * Stores medical terms, their definitions, and metadata
- * Links to categories and tracks approval status
- */
-export const terminologies = baseSchema.table(
-  'terminologies',
-  {
-    termId: serial('term_id').primaryKey(),
-    term: varchar('term', { length: 255 }).notNull(),
-    definition: text('definition').notNull(),
-    referenceUrl: varchar('reference_url', { length: 255 }),
-    categoryId: integer('category_id')
-      .references(() => categories.categoryId, {
+    id: uuid('id').defaultRandom().primaryKey(),
+    title: varchar('title', { length: 255 }).notNull(),
+    description: text('description').notNull(),
+    creatorId: uuid('creator_id')
+      .references(() => creators.id, {
         onDelete: 'cascade',
         onUpdate: 'cascade',
       })
       .notNull(),
-    status: terminologyStatus('status').default('Draft').notNull(),
+
+    // Store image URLs as JSONB array
+    images: jsonb('images').$type<string[]>().notNull(),
+
+    likes: integer('likes').default(0).notNull(),
+    views: integer('views').default(0).notNull(),
+
+    // Store tags as JSONB array for better querying
+    tags: jsonb('tags').$type<string[]>().default([]).notNull(),
+
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex('term_idx').on(table.term),
-    index('category_id_idx').on(table.categoryId),
-    // Full-Text Search Index can be added at the database level
+    index('creator_idx').on(table.creatorId),
+    index('likes_idx').on(table.likes),
+    index('views_idx').on(table.views),
+    index('created_idx').on(table.createdAt),
   ],
 );
 
 /**
- * Educational Insights Table
- * Contains supplementary educational content for medical terms
- * Supports multiple content types (text, video, image)
+ * Comments Table
+ * Stores user comments on projects
  */
-export const educationalInsights = baseSchema.table(
-  'educational_insights',
+export const comments = baseSchema.table(
+  'comments',
   {
-    insightId: serial('insight_id').primaryKey(),
-    termId: integer('term_id')
-      .references(() => terminologies.termId, {
+    id: uuid('id').defaultRandom().primaryKey(),
+    projectId: uuid('project_id')
+      .references(() => projects.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      })
+      .notNull(),
+    creatorId: uuid('creator_id')
+      .references(() => creators.id, {
         onDelete: 'cascade',
         onUpdate: 'cascade',
       })
       .notNull(),
     content: text('content').notNull(),
-    contentType: varchar('content_type', { length: 50 })
-      .default('text')
-      .notNull(), // e.g., 'text', 'video', 'image'
-    mediaUrl: varchar('media_url', { length: 255 }), // Applicable if contentType is not 'text'
-    source: varchar('source', { length: 255 }),
-    isApproved: boolean('is_approved').default(false).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex('insight_unique').on(table.insightId),
-    index('term_id_idx').on(table.termId),
-    index('is_approved_idx').on(table.isApproved),
+    index('project_idx').on(table.projectId),
+    index('creator_idx').on(table.creatorId),
+    index('created_idx').on(table.createdAt),
   ],
 );
 
 /**
- * Search Logs Table
- * Tracks user search activity and analytics
- * Records search queries, timing, and user context
+ * Follows Table
+ * Manages creator-to-creator following relationships
  */
-export const searchLogs = baseSchema.table(
-  'search_logs',
+export const follows = baseSchema.table(
+  'follows',
   {
-    logId: serial('log_id').primaryKey(),
-    userId: integer('user_id').references(() => users.userId, {
-      onDelete: 'set null',
-      onUpdate: 'cascade',
-    }),
-    searchQuery: varchar('search_query', { length: 255 }).notNull(),
-    searchTime: timestamp('search_time').defaultNow().notNull(),
-    ipAddress: inet('ip_address'),
-    deviceInfo: varchar('device_info', { length: 255 }),
+    followerId: uuid('follower_id')
+      .references(() => creators.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      })
+      .notNull(),
+    followingId: uuid('following_id')
+      .references(() => creators.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      })
+      .notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex('log_unique').on(table.logId),
-    index('search_query_idx').on(table.searchQuery),
-    index('search_time_idx').on(table.searchTime),
+    uniqueIndex('follower_following_idx').on(
+      table.followerId,
+      table.followingId,
+    ),
+    index('follower_idx').on(table.followerId),
+    index('following_idx').on(table.followingId),
   ],
 );
 
@@ -181,15 +180,37 @@ export const searchLogs = baseSchema.table(
  * Type Definitions
  * Generate TypeScript types from table schemas for type safety
  */
-export type SearchLog = InferSelectModel<typeof searchLogs>;
-export type NewSearchLog = InferInsertModel<typeof searchLogs>;
-export type User = InferSelectModel<typeof users>;
-export type NewUser = InferInsertModel<typeof users>;
-export type EducationalInsight = InferSelectModel<typeof educationalInsights>;
-export type NewEducationalInsight = InferInsertModel<
-  typeof educationalInsights
->;
-export type Terminology = InferSelectModel<typeof terminologies>;
-export type NewTerminology = InferInsertModel<typeof terminologies>;
-export type Category = InferSelectModel<typeof categories>;
-export type NewCategory = InferInsertModel<typeof categories>;
+export type Creator = InferSelectModel<typeof creators>;
+export type NewCreator = InferInsertModel<typeof creators>;
+export type Project = InferSelectModel<typeof projects>;
+export type NewProject = InferInsertModel<typeof projects>;
+export type Comment = InferSelectModel<typeof comments>;
+export type NewComment = InferInsertModel<typeof comments>;
+export type Follow = InferSelectModel<typeof follows>;
+export type NewFollow = InferInsertModel<typeof follows>;
+
+// Custom types for JSONB columns
+export interface CreatorStats {
+  projectViews: number;
+  appreciations: number;
+  followers: number;
+  following: number;
+}
+
+export interface SocialLinks {
+  linkedln?: string;
+  github?: string;
+  dribbble?: string;
+  behance?: string;
+  instagram?: string;
+  twitter?: string;
+  [key: string]: string | undefined;
+}
+
+export interface ProfessionalInfo {
+  title?: string;
+  skills?: string[];
+  tools?: string[];
+  collaborators?: string[];
+  portfolioLink?: string;
+}

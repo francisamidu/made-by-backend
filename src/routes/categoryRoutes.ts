@@ -1,6 +1,6 @@
 import express from 'express';
 import catchAsync from '@/utils/catchAsync';
-import { CategoryHandler } from '@/handlers/CategoryHandler';
+import { CategoryHandler } from '@/handlers/ProjectHandler';
 
 /**
  * Express router for category-related endpoints

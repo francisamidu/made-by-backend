@@ -2,7 +2,7 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { TableSchema, TUserRole, type TUser } from '@/types/schema';
 import { db } from '@/db';
-import { sanitizeUser } from '@/utils/sanitizeUser';
+import { sanitizeUser } from '@/utils/sanitizeCreator';
 
 /**
  * Service class for handling user-related database operations

@@ -1,6 +1,6 @@
 import express from 'express';
 import catchAsync from '@/utils/catchAsync';
-import { SearchLogHandler } from '@/handlers/SearchLogs';
+import { SearchLogHandler } from '@/handlers/CommentHandler';
 
 /**
  * Express router for search log-related endpoints

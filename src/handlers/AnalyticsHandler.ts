@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { UserService } from '../services/UserService';
+import { UserService } from '../services/SearchService';
 import { BadRequestError, NotFoundError } from '../utils/errors';
 
 /**

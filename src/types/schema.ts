@@ -1,99 +1,164 @@
-import {
-  categories,
-  educationalInsights,
-  searchLogs,
-  terminologies,
-  users,
-} from '@/db/schema';
+import { creators, projects, comments, follows } from '@/db/schema';
 import { InferSelectModel } from 'drizzle-orm';
 
+// Main table schemas
 export interface TableSchema {
-  categories: InferSelectModel<typeof categories>;
-  educationalInsights: InferSelectModel<typeof educationalInsights>;
-  searchLogs: InferSelectModel<typeof searchLogs>;
-  terminologies: InferSelectModel<typeof terminologies>;
-  users: InferSelectModel<typeof users>;
+  creators: InferSelectModel<typeof creators>;
+  projects: InferSelectModel<typeof projects>;
+  comments: InferSelectModel<typeof comments>;
+  follows: InferSelectModel<typeof follows>;
 }
 
-// Enum for user roles
-export enum TUserRole {
-  Admin = 'admin',
-  Editor = 'editor',
-  Viewer = 'viewer',
+// Creator Stats Interface
+export interface TCreatorStats {
+  projectViews: number;
+  appreciations: number;
+  followers: number;
+  following: number;
 }
 
-// Enum for terminology status
-export enum TTerminologyStatus {
-  Draft = 'draft',
-  Reviewed = 'reviewed',
-  Approved = 'approved',
+// Social Links Interface
+export interface TSocialLinks {
+  linkedln?: string;
+  github?: string;
+  dribbble?: string;
+  behance?: string;
+  instagram?: string;
+  twitter?: string;
+  [key: string]: string | undefined;
 }
 
-// 1. Users Table
-export interface TUser {
-  userId: number;
-  username: string;
-  passwordHash: string;
-  email: string;
-  role: TUserRole;
-  isEmailVerified: boolean;
-  isActive: boolean;
+// Professional Info Interface
+export interface TProfessionalInfo {
+  title?: string;
+  skills?: string[];
+  tools?: string[];
+  collaborators?: string[];
+  portfolioLink?: string;
+}
+
+// 1. Creators Table
+export interface TCreator {
+  id: string; // UUID
+  name: string;
+  avatar: string;
+  bio?: string;
+  username?: string;
+  location?: string;
+  email?: string;
+  bannerImage?: string;
+  isAvailableForHire: boolean;
+  stats: TCreatorStats;
+  socialLinks: TSocialLinks;
+  professionalInfo: TProfessionalInfo;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// 2. Categories Table
-export interface TCategory {
-  categoryId: number;
-  categoryName: string;
-  description?: string;
-  iconUrl?: string;
-  parentCategoryId?: number | null;
+// 2. Projects Table
+export interface TProject {
+  id: string; // UUID
+  title: string;
+  description: string;
+  creatorId: string; // UUID reference to creator
+  images: string[];
+  likes: number;
+  views: number;
+  tags: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-// 3. Terminologies Table
-export interface TTerminology {
-  termId: number;
-  term: string;
-  definition: string;
-  referenceUrl?: string | null;
-  categoryId: number;
-  status: TTerminologyStatus;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// 5. Educational Insights Table
-export interface TEducationalInsight {
-  insightId: number;
-  termId: number;
+// 3. Comments Table
+export interface TComment {
+  id: string; // UUID
+  projectId: string; // UUID reference to project
+  creatorId: string; // UUID reference to creator
   content: string;
-  contentType: string; // e.g., 'text', 'video', 'image'
-  mediaUrl?: string;
-  source?: string;
-  isApproved: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// 6. User Favorites Table
-export interface TUserFavorite {
-  favoriteId: number;
-  userId: number;
-  termId: number;
-  note?: string;
-  rating?: number; // e.g., 1-5 scale
+// 4. Follows Table
+export interface TFollow {
+  followerId: string; // UUID reference to creator
+  followingId: string; // UUID reference to creator
   createdAt: Date;
 }
 
-// 7. Search Logs Table
-export interface TSearchLog {
-  logId: number;
-  userId?: number | null;
-  searchQuery: string;
-  searchTime: Date;
-  ipAddress?: string;
-  deviceInfo?: string;
+// Response Types for API
+export interface TProjectResponse extends TProject {
+  creator: TCreator;
+  comments?: TComment[];
+}
+
+export interface TCreatorResponse extends TCreator {
+  projects?: TProject[];
+  followers?: TCreator[];
+  following?: TCreator[];
+}
+
+// Request Types for API
+export interface TCreateProjectRequest {
+  title: string;
+  description: string;
+  images: string[];
+  tags: string[];
+}
+
+export interface TUpdateCreatorRequest {
+  bio?: string;
+  location?: string;
+  isAvailableForHire?: boolean;
+  professionalInfo?: Partial<TProfessionalInfo>;
+  socialLinks?: Partial<TSocialLinks>;
+}
+
+// Search Types
+export interface TSearchParams {
+  query?: string;
+  tags?: string[];
+  location?: string;
+  isAvailableForHire?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+// Analytics Types
+export interface TProjectAnalytics {
+  totalViews: number;
+  totalLikes: number;
+  commentCount: number;
+  viewsOverTime: Array<{
+    date: Date;
+    views: number;
+  }>;
+}
+
+export interface TCreatorAnalytics {
+  totalProjectViews: number;
+  totalAppreciations: number;
+  followerGrowth: Array<{
+    date: Date;
+    followers: number;
+  }>;
+  projectEngagement: Array<{
+    projectId: string;
+    title: string;
+    views: number;
+    likes: number;
+  }>;
+}
+
+// Utility Types
+export type TProjectSort = 'latest' | 'popular' | 'trending';
+
+export type TCreatorSort = 'followers' | 'projects' | 'joined';
+
+export interface TPaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
 }

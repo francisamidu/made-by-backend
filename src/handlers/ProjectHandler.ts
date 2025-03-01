@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { CategoryService } from '../services/CategoryService';
+import { CategoryService } from '../services/CreatorService';
 import { BadRequestError, NotFoundError } from '../utils/errors';
 
 /**

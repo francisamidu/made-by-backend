@@ -1,6 +1,6 @@
 import express from 'express';
 import catchAsync from '../utils/catchAsync';
-import { TerminologyHandler } from '@/handlers/TerminologyHandler';
+import { TerminologyHandler } from '@/handlers/FollowHandler';
 
 /**
  * Express router for terminology-related endpoints

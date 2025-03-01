@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { TerminologyService } from '../services/TerminologyService';
+import { TerminologyService } from '../services/ProjectService';
 import { BadRequestError, NotFoundError } from '../utils/errors';
 
 /**

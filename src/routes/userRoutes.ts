@@ -1,6 +1,6 @@
 import express from 'express';
 import catchAsync from '../utils/catchAsync';
-import { UserHandler } from '@/handlers/UserHandler';
+import { UserHandler } from '@/handlers/AnalyticsHandler';
 
 /**
  * Express router for user-related endpoints

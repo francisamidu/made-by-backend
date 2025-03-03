@@ -200,8 +200,6 @@ export interface CreatorStats {
 export interface SocialLinks {
   linkedln?: string;
   github?: string;
-  dribbble?: string;
-  behance?: string;
   instagram?: string;
   twitter?: string;
   [key: string]: string | undefined;

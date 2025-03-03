@@ -13,7 +13,7 @@ import {
 /**
  * Handler class for managing analytics-related operations
  */
-export class AnalyticsHandler {
+export class AnalyticsService {
   /**
    * Get analytics for a specific creator
    */

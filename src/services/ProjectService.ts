@@ -1,167 +1,402 @@
-import { terminologies } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import { TTerminology, TTerminologyStatus } from '@/types/schema';
+import { projects, creators, comments } from '@/db/schema';
+import { eq, and, desc, sql, ilike, or } from 'drizzle-orm';
+import {
+  TProject,
+  TProjectResponse,
+  TPaginatedResponse,
+  TCreateProjectRequest,
+  TProjectSort,
+  TCreator,
+} from '@/types/schema';
 import { db } from '@/db';
 
 /**
- * Service class for managing terminology-related database operations
+ * Service class for managing project-related database operations
  */
-export class TerminologyService {
+export class ProjectService {
   /**
-   * Retrieves all terminologies from the database
-   * @returns Promise containing an array of terminologies or null if none found
+   * Retrieves all projects with pagination
    */
-  static async findAll(): Promise<TTerminology[] | null> {
-    const result = await db.select().from(terminologies);
-    return result.map((item) => ({
-      ...item,
-      status:
-        TTerminologyStatus[item.status as keyof typeof TTerminologyStatus],
-    }));
+  static async findAll(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<TPaginatedResponse<TProjectResponse>> {
+    const offset = (page - 1) * limit;
+
+    const projectsList = await db
+      .select({
+        project: projects,
+        creator: creators,
+      })
+      .from(projects)
+      .leftJoin(creators, eq(projects.creatorId, creators.id))
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(projects.createdAt))
+      .execute();
+
+    const [{ count }] = await db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(projects)
+      .execute();
+
+    const totalCount = Number(count);
+
+    return {
+      data: projectsList.map(({ project, creator }) => ({
+        ...(project as TProject),
+        creator: creator as TCreator,
+      })) as TProjectResponse[],
+      total: totalCount,
+      page,
+      limit,
+      hasMore: offset + limit < totalCount,
+    };
   }
 
   /**
-   * Finds a terminology entry by its ID
-   * @param id - The unique identifier of the terminology
-   * @returns Promise containing the terminology or null if not found
+   * Finds a project by its ID
    */
-  static async findById(id: number): Promise<TTerminology | null> {
-    const result = await db
-      .select()
-      .from(terminologies)
-      .where(eq(terminologies.termId, id))
-      .limit(1);
-    return result.length > 0
-      ? {
-          ...result[0],
-          status:
-            TTerminologyStatus[
-              result[0].status as keyof typeof TTerminologyStatus
-            ],
-        }
-      : null;
+  static async findById(id: string): Promise<TProjectResponse | null> {
+    const [result] = await db
+      .select({
+        project: projects,
+        creator: creators,
+      })
+      .from(projects)
+      .where(eq(projects.id, id))
+      .leftJoin(creators, eq(projects.creatorId, creators.id))
+      .limit(1)
+      .execute();
+
+    if (!result) return null;
+
+    const [{ count }] = await db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(comments)
+      .where(eq(comments.projectId, id))
+      .execute();
+
+    return {
+      ...(result.project as TProject),
+      creator: result.creator as TCreator,
+      commentCount: Number(count),
+    } as TProjectResponse;
   }
 
   /**
-   * Finds a terminology entry by its term text
-   * @param term - The term to search for
-   * @returns Promise containing the terminology or null if not found
-   */
-  static async findByTerm(term: string): Promise<TTerminology | null> {
-    const result = await db
-      .select()
-      .from(terminologies)
-      .where(eq(terminologies.term, term))
-      .limit(1);
-    return result.length > 0
-      ? {
-          ...result[0],
-          status:
-            TTerminologyStatus[
-              result[0].status as keyof typeof TTerminologyStatus
-            ],
-        }
-      : null;
-  }
-
-  /**
-   * Creates a new terminology entry
-   * @param data - Terminology data excluding auto-generated fields (termId, createdAt, updatedAt)
-   * @returns Promise containing the newly created terminology
+   * Creates a new project
    */
   static async create(
-    data: Omit<TTerminology, 'termId' | 'createdAt' | 'updatedAt'>,
-  ): Promise<TTerminology> {
-    const dbData = {
-      ...data,
-      status: data.status as unknown as 'Draft' | 'Reviewed' | 'Approved',
-    };
-    const result = await db.insert(terminologies).values(dbData).returning();
-    return {
-      ...result[0],
-      status:
-        TTerminologyStatus[result[0].status as keyof typeof TTerminologyStatus],
-    };
+    creatorId: string,
+    data: TCreateProjectRequest,
+  ): Promise<TProject> {
+    const [result] = (await db
+      .insert(projects)
+      .values({
+        ...data,
+        creatorId,
+        likes: 0,
+        views: 0,
+      })
+      .returning()
+      .execute()) as TProject[];
+
+    return result;
   }
 
   /**
-   * Updates an existing terminology entry
-   * @param id - The ID of the terminology to update
-   * @param data - Partial terminology data to update
-   * @returns Promise containing the updated terminology or null if not found
+   * Updates an existing project
    */
   static async update(
-    id: number,
-    data: Partial<Omit<TTerminology, 'termId' | 'createdAt' | 'updatedAt'>>,
-  ): Promise<TTerminology | null> {
-    const dbData = {
-      ...data,
-      status: data.status
-        ? (data.status as unknown as 'Draft' | 'Reviewed' | 'Approved')
-        : undefined,
+    id: string,
+    data: Partial<TCreateProjectRequest>,
+  ): Promise<TProject | null> {
+    const [result] = (await db
+      .update(projects)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(projects.id, id))
+      .returning()
+      .execute()) as TProject[];
+
+    return result || null;
+  }
+
+  /**
+   * Deletes a project
+   */
+  static async delete(id: string): Promise<boolean> {
+    const result = await db
+      .delete(projects)
+      .where(eq(projects.id, id))
+      .execute();
+
+    return result?.rowCount ? result.rowCount > 0 : false;
+  }
+
+  /**
+   * Increments project view count
+   */
+  static async incrementViews(id: string): Promise<number> {
+    const [result] = (await db
+      .update(projects)
+      .set({
+        views: sql`${projects.views} + 1`,
+      })
+      .where(eq(projects.id, id))
+      .returning()
+      .execute()) as TProject[];
+
+    return result?.views || 0;
+  }
+
+  /**
+   * Toggles like status for a project
+   */
+  static async toggleLike(
+    id: string,
+    increment: boolean = true,
+  ): Promise<number> {
+    const [result] = (await db
+      .update(projects)
+      .set({
+        likes: sql`${projects.likes} ${increment ? '+' : '-'} 1`,
+      })
+      .where(eq(projects.id, id))
+      .returning()
+      .execute()) as TProject[];
+
+    return result?.likes || 0;
+  }
+
+  /**
+   * Searches projects
+   */
+  static async search(
+    query: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<TPaginatedResponse<TProjectResponse>> {
+    const offset = (page - 1) * limit;
+
+    const searchResults = await db
+      .select({
+        project: projects,
+        creator: creators,
+      })
+      .from(projects)
+      .where(
+        or(
+          ilike(projects.title, `%${query}%`),
+          ilike(projects.description, `%${query}%`),
+          sql`${projects.tags}::text ILIKE ${`%${query}%`}`,
+        ),
+      )
+      .leftJoin(creators, eq(projects.creatorId, creators.id))
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(projects.createdAt))
+      .execute();
+
+    const [{ count }] = await db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(projects)
+      .where(
+        or(
+          ilike(projects.title, `%${query}%`),
+          ilike(projects.description, `%${query}%`),
+          sql`${projects.tags}::text ILIKE ${`%${query}%`}`,
+        ),
+      )
+      .execute();
+
+    const totalCount = Number(count);
+
+    return {
+      data: searchResults.map(({ project, creator }) => ({
+        ...(project as TProject),
+        creator: creator as TCreator,
+      })) as TProjectResponse[],
+      total: totalCount,
+      page,
+      limit,
+      hasMore: offset + limit < totalCount,
     };
-    const result = await db
-      .update(terminologies)
-      .set(dbData)
-      .where(eq(terminologies.termId, id))
-      .returning();
-    return result.length > 0
-      ? {
-          ...result[0],
-          status:
-            TTerminologyStatus[
-              result[0].status as keyof typeof TTerminologyStatus
-            ],
-        }
-      : null;
   }
 
   /**
-   * Deletes a terminology entry by its ID
-   * @param id - The ID of the terminology to delete
-   * @returns Promise containing boolean indicating success of deletion
+   * Gets projects by tags
    */
-  static async delete(id: number): Promise<boolean> {
-    const result = await db
-      .delete(terminologies)
-      .where(eq(terminologies.termId, id))
-      .returning();
-    return result.length > 0;
+  /**
+   * Gets projects by tags
+   */
+  static async getByTags(
+    tags: string[],
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<TPaginatedResponse<TProjectResponse>> {
+    const offset = (page - 1) * limit;
+
+    // Create a SQL condition for array overlap
+    const tagsCondition = sql`${projects.tags} && array[${sql.join(
+      tags.map((tag) => sql`${tag}`),
+      sql`, `,
+    )}]::text[]`;
+
+    const projectsList = await db
+      .select({
+        project: projects,
+        creator: creators,
+      })
+      .from(projects)
+      .where(tagsCondition)
+      .leftJoin(creators, eq(projects.creatorId, creators.id))
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(projects.createdAt))
+      .execute();
+
+    const [{ count }] = await db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(projects)
+      .where(tagsCondition)
+      .execute();
+
+    const totalCount = Number(count);
+
+    return {
+      data: projectsList.map(({ project, creator }) => ({
+        ...(project as TProject),
+        creator: creator as TCreator,
+      })) as TProjectResponse[],
+      total: totalCount,
+      page,
+      limit,
+      hasMore: offset + limit < totalCount,
+    };
+  }
+  /**
+   * Gets projects by tags
+   */
+  static async getTrending(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<TPaginatedResponse<TProjectResponse>> {
+    const offset = (page - 1) * limit;
+
+    const trendingProjects = await db
+      .select({
+        project: projects,
+        creator: creators,
+      })
+      .from(projects)
+      .leftJoin(creators, eq(projects.creatorId, creators.id))
+      .orderBy(sql`${projects.views} + ${projects.likes} DESC`)
+      .limit(limit)
+      .offset(offset)
+      .execute();
+
+    const [{ count }] = await db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(projects)
+      .execute();
+
+    const totalCount = Number(count);
+
+    return {
+      data: trendingProjects.map(({ project, creator }) => ({
+        ...(project as TProject),
+        creator: creator as TCreator,
+      })) as TProjectResponse[],
+      total: totalCount,
+      page,
+      limit,
+      hasMore: offset + limit < totalCount,
+    };
   }
 
   /**
-   * Finds all terminology entries for a specific category
-   * @param categoryId - The ID of the category to find terminologies for
-   * @returns Promise containing an array of terminologies
+   * Gets projects sorted by specified criteria
    */
-  static async findByCategory(categoryId: number): Promise<TTerminology[]> {
-    const result = await db
+  static async getSorted(
+    sortBy: TProjectSort,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<TPaginatedResponse<TProjectResponse>> {
+    const offset = (page - 1) * limit;
+
+    let orderByClause;
+    switch (sortBy) {
+      case 'latest':
+        orderByClause = desc(projects.createdAt);
+        break;
+      case 'popular':
+        orderByClause = desc(projects.likes);
+        break;
+      case 'trending':
+        orderByClause = sql`${projects.views} + ${projects.likes} DESC`;
+        break;
+      default:
+        orderByClause = desc(projects.createdAt);
+    }
+
+    const sortedProjects = await db
+      .select({
+        project: projects,
+        creator: creators,
+      })
+      .from(projects)
+      .leftJoin(creators, eq(projects.creatorId, creators.id))
+      .orderBy(orderByClause)
+      .limit(limit)
+      .offset(offset)
+      .execute();
+
+    const [{ count }] = await db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(projects)
+      .execute();
+
+    const totalCount = Number(count);
+
+    return {
+      data: sortedProjects.map(({ project, creator }) => ({
+        ...(project as TProject),
+        creator: creator as TCreator,
+      })) as TProjectResponse[],
+      total: totalCount,
+      page,
+      limit,
+      hasMore: offset + limit < totalCount,
+    };
+  }
+
+  /**
+   * Checks if a creator owns a project
+   */
+  static async isOwner(projectId: string, creatorId: string): Promise<boolean> {
+    const [result] = (await db
       .select()
-      .from(terminologies)
-      .where(eq(terminologies.categoryId, categoryId));
-    return result.map((item) => ({
-      ...item,
-      status:
-        TTerminologyStatus[item.status as keyof typeof TTerminologyStatus],
-    }));
-  }
+      .from(projects)
+      .where(and(eq(projects.id, projectId), eq(projects.creatorId, creatorId)))
+      .limit(1)
+      .execute()) as TProject[];
 
-  /**
-   * Finds all terminology entries with a specific status
-   * @param status - The status to filter by (Draft, Reviewed, or Approved)
-   * @returns Promise containing an array of terminologies
-   */
-  static async findByStatus(
-    status: 'Draft' | 'Reviewed' | 'Approved',
-  ): Promise<TTerminology[]> {
-    const result = await db
-      .select()
-      .from(terminologies)
-      .where(eq(terminologies.status, status));
-    return result.map((item) => ({
-      ...item,
-      status:
-        TTerminologyStatus[item.status as keyof typeof TTerminologyStatus],
-    }));
+    return !!result;
   }
 }

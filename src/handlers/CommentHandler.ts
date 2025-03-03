@@ -1,46 +1,81 @@
-import type { Request, Response } from 'express';
-import { SearchLogService } from '../services/AnalyticsService';
-import { BadRequestError, NotFoundError } from '../utils/errors';
+// src/handlers/CommentHandler.ts
+import { Request, Response } from 'express';
+import { CommentService } from '@/services/CommentService';
+import { TComment, TPaginatedResponse } from '@/types/schema';
 
 /**
- * Handler class for search log-related HTTP requests
- * Processes incoming requests and returns appropriate responses
+ * Handler for comment-related operations
  */
-export class SearchLogHandler {
+export class CommentHandler {
   /**
-   * Retrieves all search logs
-   * @param _req - Express request object (unused)
-   * @param res - Express response object
+   * Create a new comment
    */
-  static async getAllSearchLogs(_req: Request, res: Response): Promise<void> {
-    const categories = await SearchLogService.findAll();
-    res.status(200).json({
-      success: true,
-      data: categories,
-    });
+  async create(req: Request, res: Response) {
+    const { creatorId, projectId, content } = req.body;
+    const comment = await CommentService.create(creatorId, projectId, content);
+    res.status(201).json(comment);
   }
 
   /**
-   * Retrieves search logs for a specific user
-   * @param req - Express request object containing user ID
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if search log doesn't exist
+   * Get a comment by ID
    */
-  static async getSearchLogById(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid SearchLog ID');
+  async getById(req: Request, res: Response) {
+    const comment = await CommentService.findById(req.params.id);
+    if (comment) {
+      res.json(comment);
+    } else {
+      res.status(404).json({ error: 'Comment not found' });
     }
+  }
 
-    const SearchLog = await SearchLogService.findByUser(id);
-    if (!SearchLog) {
-      throw new NotFoundError(`Search Log with ID ${id} not found`);
+  /**
+   * Update a comment
+   */
+  async update(req: Request, res: Response) {
+    const { content } = req.body;
+    const updated = await CommentService.update(req.params.id, content);
+    if (updated) {
+      res.json(updated);
+    } else {
+      res.status(404).json({ error: 'Comment not found' });
     }
+  }
 
-    res.status(200).json({
-      success: true,
-      data: SearchLog,
-    });
+  /**
+   * Delete a comment
+   */
+  async delete(req: Request, res: Response) {
+    const deleted = await CommentService.delete(req.params.id);
+    if (deleted) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Comment not found' });
+    }
+  }
+
+  /**
+   * Get comments for a project
+   */
+  async getProjectComments(req: Request, res: Response) {
+    const { page = 1, limit = 10 } = req.query;
+    const comments = await CommentService.getProjectComments(
+      req.params.projectId,
+      Number(page),
+      Number(limit),
+    );
+    res.json(comments);
+  }
+
+  /**
+   * Get comments by a creator
+   */
+  async getCreatorComments(req: Request, res: Response) {
+    const { page = 1, limit = 10 } = req.query;
+    const comments = await CommentService.getCreatorComments(
+      req.params.creatorId,
+      Number(page),
+      Number(limit),
+    );
+    res.json(comments);
   }
 }

@@ -46,12 +46,9 @@ const EnvSchema = z.object({
   TWITTER_CALLBACK_URL: z.string().url(),
 
   // File Storage
-  STORAGE_PROVIDER: z.enum(['local', 's3', 'cloudinary']).default('local'),
-  STORAGE_ACCESS_KEY: z.string().optional(),
-  STORAGE_SECRET_KEY: z.string().optional(),
-  STORAGE_BUCKET: z.string().optional(),
-  STORAGE_REGION: z.string().optional(),
-  STORAGE_URL: z.string().url().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  CLOUDINARY_API_KEY: z.string(),
+  CLOUDINARY_API_SECRET: z.string(),
 
   // Redis (for caching)
   REDIS_URL: z.string().optional(),

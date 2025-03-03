@@ -1,104 +1,131 @@
-import type { Request, Response } from 'express';
-import { UserService } from '../services/SearchService';
-import { BadRequestError, NotFoundError } from '../utils/errors';
+import { Request, Response } from 'express';
+import { AnalyticsService } from '@/services/AnalyticsService';
+import {
+  TCreatorAnalytics,
+  TProjectAnalytics,
+  TPaginatedResponse,
+  TCreator,
+  TProject,
+} from '@/types/schema';
 
 /**
- * Handler class for user-related HTTP requests
- * Processes incoming requests and returns appropriate responses
+ * Handler for analytics-related operations
  */
-export class UserHandler {
-  /**
-   * Retrieves all users from the database
-   * @param _req - Express request object (unused)
-   * @param res - Express response object
-   */
-  static async getAllUsers(_req: Request, res: Response): Promise<void> {
-    const users = await UserService.findAll();
-    res.status(200).json({
-      success: true,
-      data: users,
-    });
+export class AnalyticsHandler {
+  private analyticsService: AnalyticsService;
+
+  constructor() {
+    this.analyticsService = new AnalyticsService();
   }
 
   /**
-   * Retrieves a specific user by their ID
-   * @param req - Express request object containing user ID
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if user doesn't exist
+   * Get analytics for a specific creator
+   * @route GET /api/analytics/creators/:id
    */
-  static async getUserById(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid user ID');
-    }
-
-    const user = await UserService.findById(id);
-    if (!user) {
-      throw new NotFoundError(`User with ID ${id} not found`);
-    }
-
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
+  async getCreatorAnalytics(req: Request, res: Response<TCreatorAnalytics>) {
+    const creatorId = req.params.id;
+    const analytics =
+      await this.analyticsService.getCreatorAnalytics(creatorId);
+    res.json(analytics);
   }
 
   /**
-   * Creates a new user
-   * @param req - Express request object containing user data
-   * @param res - Express response object
+   * Get analytics for a specific project
+   * @route GET /api/analytics/projects/:id
    */
-  static async createUser(req: Request, res: Response): Promise<void> {
-    const user = await UserService.create(req.body);
-    res.status(201).json({
-      success: true,
-      data: user,
-    });
+  async getProjectAnalytics(req: Request, res: Response<TProjectAnalytics>) {
+    const projectId = req.params.id;
+    const analytics =
+      await this.analyticsService.getProjectAnalytics(projectId);
+    res.json(analytics);
   }
 
   /**
-   * Updates an existing user
-   * @param req - Express request object containing user ID and update data
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if user doesn't exist
+   * Get trending creators with pagination
+   * @route GET /api/analytics/trending/creators
    */
-  static async updateUser(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid user ID');
-    }
+  async getTrendingCreators(
+    req: Request<{}, {}, {}, { page?: string; limit?: string }>,
+    res: Response<TPaginatedResponse<TCreator>>,
+  ) {
+    const page = parseInt(req.query.page || '1');
+    const limit = parseInt(req.query.limit || '10');
 
-    const user = await UserService.update(id, req.body);
-    if (!user) {
-      throw new NotFoundError(`User with ID ${id} not found`);
-    }
-
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
+    const trending = await this.analyticsService.getTrendingCreators(
+      page,
+      limit,
+    );
+    res.json(trending);
   }
 
   /**
-   * Deletes a user
-   * @param req - Express request object containing user ID
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if user doesn't exist
+   * Get trending projects with pagination
+   * @route GET /api/analytics/trending/projects
    */
-  static async deleteUser(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid user ID');
+  async getTrendingProjects(
+    req: Request<{}, {}, {}, { page?: string; limit?: string }>,
+    res: Response<TPaginatedResponse<TProject>>,
+  ) {
+    const page = parseInt(req.query.page || '1');
+    const limit = parseInt(req.query.limit || '10');
+
+    const trending = await this.analyticsService.getTrendingProjects(
+      page,
+      limit,
+    );
+    res.json(trending);
+  }
+
+  /**
+   * Get platform-wide metrics
+   * @route GET /api/analytics/platform
+   */
+  async getPlatformMetrics(
+    req: Request,
+    res: Response<{
+      engagement: {
+        totalViews: number;
+        totalLikes: number;
+        totalFollows: number;
+      };
+      platform: {
+        totalCreators: number;
+        totalProjects: number;
+      };
+    }>,
+  ) {
+    const metrics = await this.analyticsService.getPlatformMetrics();
+    res.json(metrics);
+  }
+
+  /**
+   * Get time-based metrics
+   * @route GET /api/analytics/time
+   */
+  async getTimeBasedMetrics(
+    req: Request<{}, {}, {}, { startDate: string; endDate: string }>,
+    res: Response<
+      | Array<{
+          date: Date;
+          views: number;
+          likes: number;
+        }>
+      | { error: string }
+    >,
+  ) {
+    const startDate = new Date(req.query.startDate);
+    const endDate = new Date(req.query.endDate);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res.status(400).json({
+        error: 'Invalid date format. Use ISO 8601 format.',
+      });
     }
 
-    const success = await UserService.delete(id);
-    if (!success) {
-      throw new NotFoundError(`User with ID ${id} not found`);
-    }
-
-    res.status(204).send();
+    const metrics = await this.analyticsService.getTimeBasedMetrics(
+      startDate,
+      endDate,
+    );
+    res.json(metrics);
   }
 }

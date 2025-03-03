@@ -1,107 +1,113 @@
-import type { Request, Response } from 'express';
-import { TerminologyService } from '../services/ProjectService';
-import { BadRequestError, NotFoundError } from '../utils/errors';
+import { Request, Response } from 'express';
+import { FollowService } from '@/services/FollowService';
+import { TFollow, TCreator, TPaginatedResponse } from '@/types/schema';
 
 /**
- * Handler class for terminology-related HTTP requests
- * Processes incoming requests and returns appropriate responses
+ * Handler for follow-related operations
  */
-export class TerminologyHandler {
-  /**
-   * Retrieves all terminology entries
-   * @param _req - Express request object (unused)
-   * @param res - Express response object
-   */
-  static async getAllTerminologies(
-    _req: Request,
-    res: Response,
-  ): Promise<void> {
-    const terminologies = await TerminologyService.findAll();
-    res.status(200).json({
-      success: true,
-      data: terminologies,
-    });
+export class FollowHandler {
+  private followService: FollowService;
+
+  constructor() {
+    this.followService = new FollowService();
   }
 
   /**
-   * Retrieves a specific terminology entry by ID
-   * @param req - Express request object containing terminology ID
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if terminology doesn't exist
+   * Create a follow relationship
+   * @route POST /api/follows
    */
-  static async getTerminologyById(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid terminology ID');
-    }
-
-    const terminology = await TerminologyService.findById(id);
-    if (!terminology) {
-      throw new NotFoundError(`Terminology with ID ${id} not found`);
-    }
-
-    res.status(200).json({
-      success: true,
-      data: terminology,
-    });
+  async create(
+    req: Request<{}, {}, { followerId: string; followingId: string }>,
+    res: Response<TFollow>,
+  ) {
+    const { followerId, followingId } = req.body;
+    const follow = await FollowService.create(followerId, followingId);
+    res.status(201).json(follow);
   }
 
   /**
-   * Creates a new terminology entry
-   * @param req - Express request object containing terminology data
-   * @param res - Express response object
+   * Remove a follow relationship
+   * @route DELETE /api/follows/:followerId/:followingId
    */
-  static async createTerminology(req: Request, res: Response): Promise<void> {
-    const terminology = await TerminologyService.create(req.body);
-    res.status(201).json({
-      success: true,
-      data: terminology,
-    });
+  async delete(
+    req: Request<{ followerId: string; followingId: string }>,
+    res: Response<{ success: boolean }>,
+  ) {
+    const { followerId, followingId } = req.params;
+    const result = await FollowService.delete(followerId, followingId);
+
+    if (result) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ success: false });
+    }
   }
 
   /**
-   * Updates an existing terminology entry
-   * @param req - Express request object containing terminology ID and update data
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if terminology doesn't exist
+   * Get followers for a creator
+   * @route GET /api/follows/followers/:creatorId
    */
-  static async updateTerminology(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid terminology ID');
-    }
+  async getFollowers(
+    req: Request<
+      { creatorId: string },
+      {},
+      {},
+      { page?: string; limit?: string }
+    >,
+    res: Response<TPaginatedResponse<TCreator | Partial<TCreator>>>,
+  ) {
+    const { creatorId } = req.params;
+    const page = parseInt(req.query.page || '1');
+    const limit = parseInt(req.query.limit || '10');
 
-    const terminology = await TerminologyService.update(id, req.body);
-    if (!terminology) {
-      throw new NotFoundError(`Terminology with ID ${id} not found`);
-    }
-
-    res.status(200).json({
-      success: true,
-      data: terminology,
-    });
+    const followers = await FollowService.getFollowers(creatorId, page, limit);
+    res.json(followers);
   }
 
   /**
-   * Deletes a terminology entry
-   * @param req - Express request object containing terminology ID
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if terminology doesn't exist
+   * Get creators being followed by a creator
+   * @route GET /api/follows/following/:creatorId
    */
-  static async deleteTerminology(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid terminology ID');
-    }
+  async getFollowing(
+    req: Request<
+      { creatorId: string },
+      {},
+      {},
+      { page?: string; limit?: string }
+    >,
+    res: Response<TPaginatedResponse<TCreator | Partial<TCreator>>>,
+  ) {
+    const { creatorId } = req.params;
+    const page = parseInt(req.query.page || '1');
+    const limit = parseInt(req.query.limit || '10');
 
-    const success = await TerminologyService.delete(id);
-    if (!success) {
-      throw new NotFoundError(`Terminology with ID ${id} not found`);
-    }
+    const following = await FollowService.getFollowing(creatorId, page, limit);
+    res.json(following);
+  }
 
-    res.status(204).send();
+  /**
+   * Check if a follow relationship exists
+   * @route GET /api/follows/exists/:followerId/:followingId
+   */
+  async exists(
+    req: Request<{ followerId: string; followingId: string }>,
+    res: Response<{ exists: boolean }>,
+  ) {
+    const { followerId, followingId } = req.params;
+    const exists = await FollowService.exists(followerId, followingId);
+    res.json({ exists });
+  }
+
+  /**
+   * Get follow counts for a creator
+   * @route GET /api/follows/counts/:creatorId
+   */
+  async getCounts(
+    req: Request<{ creatorId: string }>,
+    res: Response<{ followers: number; following: number }>,
+  ) {
+    const { creatorId } = req.params;
+    const counts = await FollowService.getCounts(creatorId);
+    res.json(counts);
   }
 }

@@ -1,109 +1,95 @@
-import type { Request, Response } from 'express';
-import { CategoryService } from '../services/CreatorService';
-import { BadRequestError, NotFoundError } from '../utils/errors';
+// src/handlers/ProjectHandler.ts
+import { Request, Response } from 'express';
+import { ProjectService } from '@/services/ProjectService';
+import {
+  TCreateProjectRequest,
+  TProjectSort,
+  TPaginatedResponse,
+} from '@/types/schema';
 
 /**
- * Handler class for processing category-related HTTP requests
- * Manages the request/response cycle for category operations
+ * Handler for project-related operations
  */
-export class CategoryHandler {
+export class ProjectHandler {
   /**
-   * Retrieves all categories
-   * @param _req - Express request object (unused)
-   * @param res - Express response object
-   * @returns Promise<void>
+   * Create new project
    */
-  static async getAllCategories(_req: Request, res: Response): Promise<void> {
-    const categories = await CategoryService.findAll();
-    res.status(200).json({
-      success: true,
-      data: categories,
-    });
+  async create(req: Request, res: Response) {
+    const creatorId = req.params.creatorId;
+    const projectData: TCreateProjectRequest = req.body;
+    const project = await ProjectService.create(creatorId, projectData);
+    res.status(201).json(project);
   }
 
   /**
-   * Retrieves a specific category by ID
-   * @param req - Express request object containing category ID
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if category doesn't exist
-   * @returns Promise<void>
+   * Get project by ID
    */
-  static async getCategoryById(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid category ID');
+  async getById(req: Request, res: Response) {
+    const project = await ProjectService.findById(req.params.id);
+    if (project) {
+      res.json(project);
+    } else {
+      res.status(404).json({ error: 'Project not found' });
     }
-
-    const category = await CategoryService.findById(id);
-    if (!category) {
-      throw new NotFoundError(`Category with ID ${id} not found`);
-    }
-
-    res.status(200).json({
-      success: true,
-      data: category,
-    });
   }
 
   /**
-   * Creates a new category
-   * @param req - Express request object containing category data in body
-   * @param res - Express response object
-   * @returns Promise<void>
+   * Update project
    */
-  static async createCategory(req: Request, res: Response): Promise<void> {
-    const category = await CategoryService.create(req.body);
-    res.status(201).json({
-      success: true,
-      data: category,
-    });
+  async update(req: Request, res: Response) {
+    const updateData: Partial<TCreateProjectRequest> = req.body;
+    const updated = await ProjectService.update(req.params.id, updateData);
+    if (updated) {
+      res.json(updated);
+    } else {
+      res.status(404).json({ error: 'Project not found' });
+    }
   }
 
   /**
-   * Updates an existing category
-   * @param req - Express request object containing category ID and update data
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if category doesn't exist
-   * @returns Promise<void>
+   * Delete project
    */
-  static async updateCategory(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid category ID');
+  async delete(req: Request, res: Response) {
+    const deleted = await ProjectService.delete(req.params.id);
+    if (deleted) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Project not found' });
     }
-
-    const category = await CategoryService.update(id, req.body);
-    if (!category) {
-      throw new NotFoundError(`Category with ID ${id} not found`);
-    }
-
-    res.status(200).json({
-      success: true,
-      data: category,
-    });
   }
 
   /**
-   * Deletes a category
-   * @param req - Express request object containing category ID
-   * @param res - Express response object
-   * @throws BadRequestError if ID is invalid
-   * @throws NotFoundError if category doesn't exist
-   * @returns Promise<void>
+   * Get projects by tags
    */
-  static async deleteCategory(req: Request, res: Response): Promise<void> {
-    const id = Number.parseInt(req.params.id);
-    if (isNaN(id)) {
-      throw new BadRequestError('Invalid category ID');
-    }
+  async getByTags(req: Request, res: Response) {
+    const { tags, page = 1, limit = 10 } = req.query;
+    const projects = await ProjectService.getByTags(
+      (tags as string).split(','),
+      Number(page),
+      Number(limit),
+    );
+    res.json(projects);
+  }
 
-    const success = await CategoryService.delete(id);
-    if (!success) {
-      throw new NotFoundError(`Category with ID ${id} not found`);
-    }
+  /**
+   * Get sorted projects
+   */
+  async getSorted(req: Request, res: Response) {
+    const { sortBy, page = 1, limit = 10 } = req.query;
+    const projects = await ProjectService.getSorted(
+      sortBy as TProjectSort,
+      Number(page),
+      Number(limit),
+    );
+    res.json(projects);
+  }
 
-    res.status(204).send();
+  /**
+   * Toggle project like
+   */
+  async toggleLike(req: Request, res: Response) {
+    const { increment = true } = req.body;
+    const likes = await ProjectService.toggleLike(req.params.id, increment);
+    res.json({ likes });
   }
 }

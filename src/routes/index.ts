@@ -1,5 +1,5 @@
 // src/routes/index.ts
-import { Router } from 'express';
+import AsyncRouter from '@/utils/AsyncRouter';
 import authRoutes from './auth.routes';
 import analyticsRoutes from './analytics.routes';
 import creatorRoutes from './creator.routes';
@@ -8,7 +8,7 @@ import followRoutes from './follower.routes';
 import projectRoutes from './project.routes';
 import searchRoutes from './search.routes';
 
-const router = Router();
+const { router } = new AsyncRouter();
 
 // API Routes
 router.use('/auth', authRoutes);

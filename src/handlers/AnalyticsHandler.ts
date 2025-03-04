@@ -1,5 +1,7 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AnalyticsService } from '@/services/AnalyticsService';
+import { ApiRequest } from '@/types/request';
+import { ApiResponse } from '@/types/response';
 import {
   TCreatorAnalytics,
   TProjectAnalytics,
@@ -7,6 +9,8 @@ import {
   TCreator,
   TProject,
 } from '@/types/schema';
+import { AppError } from '@/utils/errors';
+import { PlatformMetrics, TimeMetrics } from '@/types/analytics';
 
 /**
  * Handler for analytics-related operations
@@ -22,22 +26,40 @@ export class AnalyticsHandler {
    * Get analytics for a specific creator
    * @route GET /api/analytics/creators/:id
    */
-  async getCreatorAnalytics(req: Request, res: Response<TCreatorAnalytics>) {
-    const creatorId = req.params.id;
-    const analytics =
-      await this.analyticsService.getCreatorAnalytics(creatorId);
-    res.json(analytics);
+  async getCreatorAnalytics(
+    req: ApiRequest<{ id: string }>,
+    res: Response<ApiResponse<TCreatorAnalytics>>,
+  ) {
+    const { id } = req.params;
+    const analytics = await this.analyticsService.getCreatorAnalytics(id);
+
+    res.json({
+      data: analytics,
+      meta: {
+        creatorId: id,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 
   /**
    * Get analytics for a specific project
    * @route GET /api/analytics/projects/:id
    */
-  async getProjectAnalytics(req: Request, res: Response<TProjectAnalytics>) {
-    const projectId = req.params.id;
-    const analytics =
-      await this.analyticsService.getProjectAnalytics(projectId);
-    res.json(analytics);
+  async getProjectAnalytics(
+    req: ApiRequest<{ id: string }>,
+    res: Response<ApiResponse<TProjectAnalytics>>,
+  ) {
+    const { id } = req.params;
+    const analytics = await this.analyticsService.getProjectAnalytics(id);
+
+    res.json({
+      data: analytics,
+      meta: {
+        projectId: id,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 
   /**
@@ -45,17 +67,31 @@ export class AnalyticsHandler {
    * @route GET /api/analytics/trending/creators
    */
   async getTrendingCreators(
-    req: Request<{}, {}, {}, { page?: string; limit?: string }>,
-    res: Response<TPaginatedResponse<TCreator>>,
+    req: ApiRequest<{}, {}, { page?: string; limit?: string }>,
+    res: Response<ApiResponse<TPaginatedResponse<TCreator>>>,
   ) {
     const page = parseInt(req.query.page || '1');
     const limit = parseInt(req.query.limit || '10');
+
+    if (isNaN(page) || isNaN(limit)) {
+      throw new AppError('Invalid pagination parameters', 400);
+    }
 
     const trending = await this.analyticsService.getTrendingCreators(
       page,
       limit,
     );
-    res.json(trending);
+
+    res.json({
+      data: trending,
+      meta: {
+        page,
+        limit,
+        total: trending.total,
+        hasMore: trending.hasMore,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 
   /**
@@ -63,17 +99,31 @@ export class AnalyticsHandler {
    * @route GET /api/analytics/trending/projects
    */
   async getTrendingProjects(
-    req: Request<{}, {}, {}, { page?: string; limit?: string }>,
-    res: Response<TPaginatedResponse<TProject>>,
+    req: ApiRequest<{}, {}, { page?: string; limit?: string }>,
+    res: Response<ApiResponse<TPaginatedResponse<TProject>>>,
   ) {
     const page = parseInt(req.query.page || '1');
     const limit = parseInt(req.query.limit || '10');
+
+    if (isNaN(page) || isNaN(limit)) {
+      throw new AppError('Invalid pagination parameters', 400);
+    }
 
     const trending = await this.analyticsService.getTrendingProjects(
       page,
       limit,
     );
-    res.json(trending);
+
+    res.json({
+      data: trending,
+      meta: {
+        page,
+        limit,
+        total: trending.total,
+        hasMore: trending.hasMore,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 
   /**
@@ -81,21 +131,17 @@ export class AnalyticsHandler {
    * @route GET /api/analytics/platform
    */
   async getPlatformMetrics(
-    req: Request,
-    res: Response<{
-      engagement: {
-        totalViews: number;
-        totalLikes: number;
-        totalFollows: number;
-      };
-      platform: {
-        totalCreators: number;
-        totalProjects: number;
-      };
-    }>,
+    req: ApiRequest,
+    res: Response<ApiResponse<PlatformMetrics>>,
   ) {
     const metrics = await this.analyticsService.getPlatformMetrics();
-    res.json(metrics);
+
+    res.json({
+      data: metrics,
+      meta: {
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 
   /**
@@ -103,29 +149,29 @@ export class AnalyticsHandler {
    * @route GET /api/analytics/time
    */
   async getTimeBasedMetrics(
-    req: Request<{}, {}, {}, { startDate: string; endDate: string }>,
-    res: Response<
-      | Array<{
-          date: Date;
-          views: number;
-          likes: number;
-        }>
-      | { error: string }
-    >,
+    req: ApiRequest<{}, {}, { startDate: string; endDate: string }>,
+    res: Response<ApiResponse<TimeMetrics[]>>,
   ) {
     const startDate = new Date(req.query.startDate);
     const endDate = new Date(req.query.endDate);
 
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      return res.status(400).json({
-        error: 'Invalid date format. Use ISO 8601 format.',
-      });
+      throw new AppError('Invalid date format. Use ISO 8601 format.', 400);
     }
 
     const metrics = await this.analyticsService.getTimeBasedMetrics(
       startDate,
       endDate,
     );
-    res.json(metrics);
+
+    res.json({
+      data: metrics,
+      meta: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        timespan: `${Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))} days`,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 }

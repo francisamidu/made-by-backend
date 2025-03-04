@@ -1,95 +1,204 @@
-// src/handlers/ProjectHandler.ts
-import { Request, Response } from 'express';
-import { ProjectService } from '@/services/ProjectService';
+import { Response } from 'express';
+import { SearchService } from '@/services/SearchService';
+import { ApiRequest } from '@/types/request';
+import { ApiResponse } from '@/types/response';
 import {
-  TCreateProjectRequest,
-  TProjectSort,
+  TSearchParams,
   TPaginatedResponse,
+  TCreator,
+  TProjectResponse,
 } from '@/types/schema';
+import { AppError } from '@/utils/errors';
+import { SearchQueryParams, GlobalSearchReults } from '@/types/query-params';
 
 /**
- * Handler for project-related operations
+ * Handler for search-related operations
  */
-export class ProjectHandler {
+export class SearchHandler {
   /**
-   * Create new project
+   * Perform global search
+   * @route GET /api/search/all
    */
-  async create(req: Request, res: Response) {
-    const creatorId = req.params.creatorId;
-    const projectData: TCreateProjectRequest = req.body;
-    const project = await ProjectService.create(creatorId, projectData);
-    res.status(201).json(project);
-  }
+  async searchAll(
+    req: ApiRequest<{}, {}, SearchQueryParams>,
+    res: Response<ApiResponse<GlobalSearchReults>>,
+  ) {
+    const { query, page = '1', limit = '10' } = req.query;
 
-  /**
-   * Get project by ID
-   */
-  async getById(req: Request, res: Response) {
-    const project = await ProjectService.findById(req.params.id);
-    if (project) {
-      res.json(project);
-    } else {
-      res.status(404).json({ error: 'Project not found' });
+    if (!query) {
+      throw new AppError('Search query is required', 400);
     }
-  }
 
-  /**
-   * Update project
-   */
-  async update(req: Request, res: Response) {
-    const updateData: Partial<TCreateProjectRequest> = req.body;
-    const updated = await ProjectService.update(req.params.id, updateData);
-    if (updated) {
-      res.json(updated);
-    } else {
-      res.status(404).json({ error: 'Project not found' });
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    if (isNaN(pageNumber) || isNaN(limitNumber)) {
+      throw new AppError('Invalid pagination parameters', 400);
     }
-  }
 
-  /**
-   * Delete project
-   */
-  async delete(req: Request, res: Response) {
-    const deleted = await ProjectService.delete(req.params.id);
-    if (deleted) {
-      res.json({ success: true });
-    } else {
-      res.status(404).json({ error: 'Project not found' });
-    }
-  }
-
-  /**
-   * Get projects by tags
-   */
-  async getByTags(req: Request, res: Response) {
-    const { tags, page = 1, limit = 10 } = req.query;
-    const projects = await ProjectService.getByTags(
-      (tags as string).split(','),
-      Number(page),
-      Number(limit),
+    const results = await SearchService.searchAll(
+      query,
+      pageNumber,
+      limitNumber,
     );
-    res.json(projects);
+
+    res.json({
+      data: results,
+      meta: {
+        query,
+        page: pageNumber,
+        limit: limitNumber,
+        total: results.creators.total + results.projects.total,
+        hasMore: results.creators.hasMore || results.projects.hasMore,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 
   /**
-   * Get sorted projects
+   * Search creators
+   * @route GET /api/search/creators
    */
-  async getSorted(req: Request, res: Response) {
-    const { sortBy, page = 1, limit = 10 } = req.query;
-    const projects = await ProjectService.getSorted(
-      sortBy as TProjectSort,
-      Number(page),
-      Number(limit),
+  async searchCreators(
+    req: ApiRequest<{}, {}, SearchQueryParams>,
+    res: Response<
+      ApiResponse<TPaginatedResponse<TCreator | Partial<TCreator>>>
+    >,
+  ) {
+    const { query, page = '1', limit = '10' } = req.query;
+
+    if (!query) {
+      throw new AppError('Search query is required', 400);
+    }
+
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    if (isNaN(pageNumber) || isNaN(limitNumber)) {
+      throw new AppError('Invalid pagination parameters', 400);
+    }
+
+    const results = await SearchService.searchCreators(
+      query,
+      pageNumber,
+      limitNumber,
     );
-    res.json(projects);
+
+    res.json({
+      data: results,
+      meta: {
+        query,
+        page: pageNumber,
+        limit: limitNumber,
+        total: results.total,
+        hasMore: results.hasMore,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 
   /**
-   * Toggle project like
+   * Search projects
+   * @route GET /api/search/projects
    */
-  async toggleLike(req: Request, res: Response) {
-    const { increment = true } = req.body;
-    const likes = await ProjectService.toggleLike(req.params.id, increment);
-    res.json({ likes });
+  async searchProjects(
+    req: ApiRequest<{}, {}, SearchQueryParams>,
+    res: Response<ApiResponse<TPaginatedResponse<TProjectResponse>>>,
+  ) {
+    const { query, page = '1', limit = '10' } = req.query;
+
+    if (!query) {
+      throw new AppError('Search query is required', 400);
+    }
+
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    if (isNaN(pageNumber) || isNaN(limitNumber)) {
+      throw new AppError('Invalid pagination parameters', 400);
+    }
+
+    const results = await SearchService.searchProjects(
+      query,
+      pageNumber,
+      limitNumber,
+    );
+
+    res.json({
+      data: results,
+      meta: {
+        query,
+        page: pageNumber,
+        limit: limitNumber,
+        total: results.total,
+        hasMore: results.hasMore,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  }
+
+  /**
+   * Advanced search
+   * @route POST /api/search/advanced
+   */
+  async advancedSearch(
+    req: ApiRequest<{}, TSearchParams>,
+    res: Response<ApiResponse<TPaginatedResponse<TProjectResponse>>>,
+  ) {
+    const searchParams = req.body;
+
+    if (!searchParams.query && !searchParams.tags?.length) {
+      throw new AppError('Search query or tags are required', 400);
+    }
+
+    const results = await SearchService.advancedSearch(searchParams);
+
+    res.json({
+      data: results,
+      meta: {
+        ...searchParams,
+        page: results.page,
+        limit: results.limit,
+        total: results.total,
+        hasMore: results.hasMore,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  }
+
+  /**
+   * Get search suggestions
+   * @route GET /api/search/suggestions
+   */
+  async getSearchSuggestions(
+    req: ApiRequest<{}, {}, SearchQueryParams>,
+    res: Response<ApiResponse<string[]>>,
+  ) {
+    const { query, limit = '5' } = req.query;
+
+    if (!query) {
+      throw new AppError('Search query is required', 400);
+    }
+
+    const limitNumber = parseInt(limit);
+
+    if (isNaN(limitNumber)) {
+      throw new AppError('Invalid limit parameter', 400);
+    }
+
+    const suggestions = await SearchService.getSearchSuggestions(
+      query,
+      limitNumber,
+    );
+
+    res.json({
+      data: suggestions,
+      meta: {
+        query,
+        limit: limitNumber,
+        total: suggestions.length,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 }

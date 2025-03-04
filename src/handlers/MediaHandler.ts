@@ -1,9 +1,10 @@
-// src/handlers/MediaHandler.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { MediaService } from '@/services/MediaService';
 import { AppError } from '@/utils/errors';
-import { CloudinaryUploadResponse } from '@/types/media';
-import multer from 'multer';
+import { CloudinaryUploadResponse, MediaOptimizeOptions } from '@/types/media';
+import { MediaQueryParams } from '@/types/query-params';
+import { ApiRequest } from '@/types/request';
+import { ApiResponse } from '@/types/response';
 
 /**
  * Handler for media-related operations
@@ -13,7 +14,10 @@ export class MediaHandler {
    * Upload single image
    * @route POST /api/media/upload
    */
-  async uploadImage(req: Request, res: Response<{ url: string }>) {
+  async uploadImage(
+    req: ApiRequest<{}, {}, {}> & { file?: Express.Multer.File },
+    res: Response<ApiResponse<{ url: string }>>,
+  ) {
     const file = req.file;
 
     if (!file) {
@@ -21,22 +25,40 @@ export class MediaHandler {
     }
 
     const imageUrl = await MediaService.uploadImage(file);
-    res.status(201).json({ url: imageUrl });
+
+    res.status(201).json({
+      data: { url: imageUrl },
+      meta: {
+        filename: file.originalname,
+        size: file.size,
+        mimetype: file.mimetype,
+      },
+    });
   }
 
   /**
    * Upload multiple images
    * @route POST /api/media/upload/multiple
    */
-  async uploadMultipleImages(req: Request, res: Response<{ urls: string[] }>) {
-    const files = req.files as Express.Multer.File[];
+  async uploadMultipleImages(
+    req: ApiRequest<{}, {}, {}> & { files?: Express.Multer.File[] },
+    res: Response<ApiResponse<{ urls: string[] }>>,
+  ) {
+    const files = req.files;
 
     if (!files?.length) {
       throw new AppError('No files provided', 400);
     }
 
     const imageUrls = await MediaService.uploadMultipleImages(files);
-    res.status(201).json({ urls: imageUrls });
+
+    res.status(201).json({
+      data: { urls: imageUrls },
+      meta: {
+        count: files.length,
+        totalSize: files.reduce((sum, file) => sum + file.size, 0),
+      },
+    });
   }
 
   /**
@@ -44,8 +66,8 @@ export class MediaHandler {
    * @route DELETE /api/media
    */
   async deleteImage(
-    req: Request<{}, {}, { url: string }>,
-    res: Response<{ success: boolean }>,
+    req: ApiRequest<{}, { url: string }>,
+    res: Response<ApiResponse<{ success: boolean }>>,
   ) {
     const { url } = req.body;
 
@@ -54,7 +76,11 @@ export class MediaHandler {
     }
 
     await MediaService.deleteImage(url);
-    res.json({ success: true });
+
+    res.json({
+      data: { success: true },
+      meta: { url },
+    });
   }
 
   /**
@@ -62,8 +88,8 @@ export class MediaHandler {
    * @route POST /api/media/thumbnail
    */
   async generateThumbnail(
-    req: Request<{}, {}, { url: string; width?: number }>,
-    res: Response<{ url: string }>,
+    req: ApiRequest<{}, { url: string; width?: number }>,
+    res: Response<ApiResponse<{ url: string }>>,
   ) {
     const { url, width } = req.body;
 
@@ -72,7 +98,14 @@ export class MediaHandler {
     }
 
     const thumbnailUrl = MediaService.generateThumbnailUrl(url, width);
-    res.json({ url: thumbnailUrl });
+
+    res.json({
+      data: { url: thumbnailUrl },
+      meta: {
+        originalUrl: url,
+        width: width || 200,
+      },
+    });
   }
 
   /**
@@ -80,18 +113,8 @@ export class MediaHandler {
    * @route POST /api/media/optimize
    */
   async generateOptimizedUrl(
-    req: Request<
-      {},
-      {},
-      {
-        url: string;
-        width?: number;
-        height?: number;
-        quality?: number;
-        format?: string;
-      }
-    >,
-    res: Response<{ url: string }>,
+    req: ApiRequest<{}, MediaOptimizeOptions>,
+    res: Response<ApiResponse<{ url: string }>>,
   ) {
     const { url, ...options } = req.body;
 
@@ -100,7 +123,14 @@ export class MediaHandler {
     }
 
     const optimizedUrl = MediaService.generateOptimizedUrl(url, options);
-    res.json({ url: optimizedUrl });
+
+    res.json({
+      data: { url: optimizedUrl },
+      meta: {
+        originalUrl: url,
+        optimizationOptions: options,
+      },
+    });
   }
 
   /**
@@ -108,8 +138,8 @@ export class MediaHandler {
    * @route GET /api/media/metadata
    */
   async getImageMetadata(
-    req: Request<{}, {}, {}, { url: string }>,
-    res: Response<CloudinaryUploadResponse>,
+    req: ApiRequest<{}, {}, MediaQueryParams>,
+    res: Response<ApiResponse<CloudinaryUploadResponse>>,
   ) {
     const { url } = req.query;
 
@@ -118,6 +148,10 @@ export class MediaHandler {
     }
 
     const metadata = await MediaService.getImageMetadata(url);
-    res.json(metadata);
+
+    res.json({
+      data: metadata,
+      meta: { url },
+    });
   }
 }

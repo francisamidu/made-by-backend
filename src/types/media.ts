@@ -31,3 +31,11 @@ export interface CloudinaryUploadResponse {
   bytes: number;
   created_at: string;
 }
+
+export interface MediaOptimizeOptions {
+  url: string;
+  width?: number;
+  height?: number;
+  quality?: number;
+  format?: 'jpg' | 'png' | 'webp';
+}

@@ -17,9 +17,7 @@ export class CreatorService {
    * Retrieves all creators from the database
    * @returns Promise containing an array of creators or null if none found
    */
-  static async findAll(): Promise<
-    TCreator[] | Partial<TCreator>[] | TableSchema['creators'] | null
-  > {
+  static async findAll(): Promise<TCreator[] | Partial<TCreator>[] | null> {
     const result = await db.select().from(creators);
     return result.map((creator) => sanitizeCreator(creator as TCreator));
   }

@@ -1,7 +1,11 @@
-// src/handlers/CommentHandler.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { CommentService } from '@/services/CommentService';
 import { TComment, TPaginatedResponse } from '@/types/schema';
+import { AppError } from '@/utils/errors';
+import { CreateCommentBody, UpdateCommentBody } from '@/types/comment';
+import { CommentPathParams, CommentQueryParams } from '@/types/query-params';
+import { ApiRequest } from '@/types/request';
+import { ApiResponse } from '@/types/response';
 
 /**
  * Handler for comment-related operations
@@ -9,73 +13,172 @@ import { TComment, TPaginatedResponse } from '@/types/schema';
 export class CommentHandler {
   /**
    * Create a new comment
+   * @route POST /api/comments
    */
-  async create(req: Request, res: Response) {
+  async create(
+    req: ApiRequest<{}, CreateCommentBody>,
+    res: Response<ApiResponse<TComment>>,
+  ) {
     const { creatorId, projectId, content } = req.body;
+
+    if (!content?.trim()) {
+      throw new AppError('Comment content is required', 400);
+    }
+
     const comment = await CommentService.create(creatorId, projectId, content);
-    res.status(201).json(comment);
+
+    res.status(201).json({
+      data: comment,
+      meta: {
+        createdAt: comment.createdAt,
+        projectId,
+        creatorId,
+      },
+    });
   }
 
   /**
    * Get a comment by ID
+   * @route GET /api/comments/:id
    */
-  async getById(req: Request, res: Response) {
+  async getById(
+    req: ApiRequest<CommentPathParams>,
+    res: Response<ApiResponse<TComment>>,
+  ) {
     const comment = await CommentService.findById(req.params.id);
-    if (comment) {
-      res.json(comment);
-    } else {
-      res.status(404).json({ error: 'Comment not found' });
+
+    if (!comment) {
+      throw new AppError('Comment not found', 404);
     }
+
+    res.json({
+      data: comment,
+      meta: {
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+      },
+    });
   }
 
   /**
    * Update a comment
+   * @route PUT /api/comments/:id
    */
-  async update(req: Request, res: Response) {
+  async update(
+    req: ApiRequest<CommentPathParams, UpdateCommentBody>,
+    res: Response<ApiResponse<TComment>>,
+  ) {
+    const { id } = req.params;
     const { content } = req.body;
-    const updated = await CommentService.update(req.params.id, content);
-    if (updated) {
-      res.json(updated);
-    } else {
-      res.status(404).json({ error: 'Comment not found' });
+
+    if (!content?.trim()) {
+      throw new AppError('Comment content is required', 400);
     }
+
+    const updated = await CommentService.update(id, content);
+
+    if (!updated) {
+      throw new AppError('Comment not found', 404);
+    }
+
+    res.json({
+      data: updated,
+      meta: {
+        updatedAt: updated.updatedAt,
+        originalId: id,
+      },
+    });
   }
 
   /**
    * Delete a comment
+   * @route DELETE /api/comments/:id
    */
-  async delete(req: Request, res: Response) {
-    const deleted = await CommentService.delete(req.params.id);
-    if (deleted) {
-      res.json({ success: true });
-    } else {
-      res.status(404).json({ error: 'Comment not found' });
+  async delete(
+    req: ApiRequest<CommentPathParams>,
+    res: Response<ApiResponse<{ success: boolean }>>,
+  ) {
+    const { id } = req.params;
+    const deleted = await CommentService.delete(id);
+
+    if (!deleted) {
+      throw new AppError('Comment not found', 404);
     }
+
+    res.json({
+      data: { success: true },
+      meta: {
+        deletedAt: new Date().toISOString(),
+        commentId: id,
+      },
+    });
   }
 
   /**
    * Get comments for a project
+   * @route GET /api/comments/project/:projectId
    */
-  async getProjectComments(req: Request, res: Response) {
-    const { page = 1, limit = 10 } = req.query;
+  async getProjectComments(
+    req: ApiRequest<CommentPathParams, {}, CommentQueryParams>,
+    res: Response<ApiResponse<TPaginatedResponse<TComment>>>,
+  ) {
+    const { projectId } = req.params;
+    const page = parseInt(req.query.page || '1');
+    const limit = parseInt(req.query.limit || '10');
+
+    if (isNaN(page) || isNaN(limit)) {
+      throw new AppError('Invalid pagination parameters', 400);
+    }
+
     const comments = await CommentService.getProjectComments(
-      req.params.projectId,
-      Number(page),
-      Number(limit),
+      projectId as string,
+      page,
+      limit,
     );
-    res.json(comments);
+
+    res.json({
+      data: comments,
+      meta: {
+        projectId,
+        page,
+        limit,
+        total: comments.total,
+        hasMore: comments.hasMore,
+      },
+    });
   }
 
   /**
    * Get comments by a creator
+   * @route GET /api/comments/creator/:creatorId
    */
-  async getCreatorComments(req: Request, res: Response) {
-    const { page = 1, limit = 10 } = req.query;
+  async getCreatorComments(
+    req: ApiRequest<CommentPathParams, {}, CommentQueryParams>,
+    res: Response<ApiResponse<TPaginatedResponse<TComment>>>,
+  ) {
+    const { creatorId } = req.params;
+    const page = parseInt(req.query.page || '1');
+    const limit = parseInt(req.query.limit || '10');
+
+    if (isNaN(page) || isNaN(limit)) {
+      throw new AppError('Invalid pagination parameters', 400);
+    }
+
     const comments = await CommentService.getCreatorComments(
-      req.params.creatorId,
-      Number(page),
-      Number(limit),
+      creatorId as string,
+      page,
+      limit,
     );
-    res.json(comments);
+
+    res.json({
+      data: comments,
+      meta: {
+        creatorId,
+        page,
+        limit,
+        total: comments.total,
+        hasMore: comments.hasMore,
+      },
+    });
   }
 }

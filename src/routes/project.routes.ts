@@ -5,7 +5,7 @@ import { authenticate } from '@/middlewares/authenticate';
 const router = new AsyncRouter();
 const handler = new ProjectHandler();
 
-router.get('/', handler.getAll);
+router.get('/', handler.getAllProjects);
 router.get('/:id', handler.getById);
 router.post('/', authenticate, handler.create);
 router.put('/:id', authenticate, handler.update);

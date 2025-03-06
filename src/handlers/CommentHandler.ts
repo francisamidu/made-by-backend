@@ -45,7 +45,7 @@ export class CommentHandler {
     req: ApiRequest<CommentPathParams>,
     res: Response<ApiResponse<TComment>>,
   ) {
-    const comment = await CommentService.findById(req.params.id);
+    const comment = await CommentService.findById(String(req.params.id));
 
     if (!comment) {
       throw new AppError('Comment not found', 404);
@@ -75,7 +75,7 @@ export class CommentHandler {
       throw new AppError('Comment content is required', 400);
     }
 
-    const updated = await CommentService.update(id, content);
+    const updated = await CommentService.update(String(id), content);
 
     if (!updated) {
       throw new AppError('Comment not found', 404);
@@ -99,7 +99,7 @@ export class CommentHandler {
     res: Response<ApiResponse<{ success: boolean }>>,
   ) {
     const { id } = req.params;
-    const deleted = await CommentService.delete(id);
+    const deleted = await CommentService.delete(String(id));
 
     if (!deleted) {
       throw new AppError('Comment not found', 404);
@@ -123,8 +123,8 @@ export class CommentHandler {
     res: Response<ApiResponse<TPaginatedResponse<TComment>>>,
   ) {
     const { projectId } = req.params;
-    const page = parseInt(req.query.page || '1');
-    const limit = parseInt(req.query.limit || '10');
+    const page = parseInt(String(req.query.page || '1'));
+    const limit = parseInt(String(req.query.limit || '10'));
 
     if (isNaN(page) || isNaN(limit)) {
       throw new AppError('Invalid pagination parameters', 400);
@@ -157,8 +157,8 @@ export class CommentHandler {
     res: Response<ApiResponse<TPaginatedResponse<TComment>>>,
   ) {
     const { creatorId } = req.params;
-    const page = parseInt(req.query.page || '1');
-    const limit = parseInt(req.query.limit || '10');
+    const page = parseInt(String(req.query.page || '1'));
+    const limit = parseInt(String(req.query.limit || '10'));
 
     if (isNaN(page) || isNaN(limit)) {
       throw new AppError('Invalid pagination parameters', 400);

@@ -30,7 +30,7 @@ export class AuthHandler {
    * @route POST /api/auth/oauth
    */
   async handleOAuthLogin(
-    req: ApiRequest<{}, OAuthProfile>,
+    req: ApiRequest<{}, {}, OAuthProfile>,
     res: Response<
       ApiResponse<{
         creator: TCreator;
@@ -71,7 +71,7 @@ export class AuthHandler {
    * @route POST /api/auth/refresh
    */
   async refreshToken(
-    req: ApiRequest<{}, { refreshToken: string }>,
+    req: ApiRequest<{}, {}, { refreshToken: string }>,
     res: Response<ApiResponse<AuthTokens>>,
   ) {
     const { refreshToken } = req.body;
@@ -99,7 +99,7 @@ export class AuthHandler {
    * @route PUT /api/auth/:id/social-links
    */
   async updateSocialLinks(
-    req: ApiRequest<{ id: string }, { socialLinks: Partial<TSocialLinks> }>,
+    req: ApiRequest<{ id?: string }, { socialLinks: Partial<TSocialLinks> }>,
     res: Response<ApiResponse<TCreator>>,
   ) {
     const { id } = req.params;
@@ -110,7 +110,7 @@ export class AuthHandler {
     }
 
     const updated = (await AuthService.updateSocialLinks(
-      id,
+      String(id),
       socialLinks,
     )) as TCreator;
 
@@ -162,12 +162,12 @@ export class AuthHandler {
    * @route POST /api/auth/:id/logout
    */
   async logout(
-    req: ApiRequest<{ id: string }>,
+    req: ApiRequest<{ id?: string }>,
     res: Response<ApiResponse<{ success: boolean }>>,
   ) {
     const { id } = req.params;
 
-    await AuthService.logout(id);
+    await AuthService.logout(String(id));
 
     res.json({
       data: { success: true },

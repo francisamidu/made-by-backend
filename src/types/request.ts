@@ -1,24 +1,97 @@
+import { Request, Response } from 'express';
+import { NextFunction } from 'express-serve-static-core';
+import { ParsedQs } from 'qs'; // Express uses this for query parsing
+import { ApiResponse } from './response';
 import { TCreator } from './schema';
 
 /**
- * Unified Request Type
+ * Params dictionary should match Express's ParamsDictionary
+ * Express params are always strings
+ */
+export interface ParamsDictionary {
+  [key: string]: string;
+}
+
+/**
+ * Query dictionary should match Express's ParsedQs structure
+ * Express uses the 'qs' library for query parsing
+ */
+export interface QueryDictionary extends ParsedQs {
+  [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[];
+}
+
+/**
+ * Extended Request interface with proper typing
+ * Maintains Express's type structure while adding our custom properties
  */
 export interface ApiRequest<
-  P = {}, // Params
-  B = {}, // Body
-  Q = {}, // Query
-> extends Express.Request {
-  params: P & {
-    id?: string;
-    [key: string]: any;
-  };
-  body: B & {
-    [key: string]: any;
-  };
-  query: Q & {
-    page?: string;
-    limit?: string;
-    [key: string]: any;
-  };
-  user?: TCreator; // From auth middleware
+  P = ParamsDictionary,
+  ResB = any,
+  ReqB = any,
+  ReqQ = QueryDictionary,
+> extends Request<P, ResB, ReqB, ReqQ> {
+  user?: TCreator;
+}
+
+/**
+ * Request handler with proper typing for Express compatibility
+ */
+export type ApiRequestHandler<
+  P = ParamsDictionary,
+  ResB = any,
+  ReqB = any,
+  ReqQ = QueryDictionary,
+> = (
+  req: ApiRequest<P, ReqB, ReqQ>,
+  res: Response<ResB>,
+  next: NextFunction,
+) => Promise<void> | void;
+
+/**
+ * API handler with wrapped response type
+ */
+export type ApiHandler<
+  P = ParamsDictionary,
+  ResB = any,
+  ReqB = any,
+  ReqQ = QueryDictionary,
+> = (
+  req: ApiRequest<P, ReqB, ReqQ>,
+  res: Response<ApiResponse<ResB>>,
+  next: NextFunction,
+) => Promise<void> | void;
+
+/**
+ * Type guard for checking if a request has a user
+ */
+export const isAuthenticated = (
+  req: ApiRequest,
+): req is ApiRequest & { user: TCreator } => {
+  return req.user !== undefined;
+};
+
+/**
+ * Helper type for route parameters
+ */
+export type RouteParams<T> = {
+  [K in keyof T]: string;
+};
+
+/**
+ * Helper type for query parameters
+ */
+export type QueryParams<T> = {
+  [K in keyof T]: string | string[] | undefined;
+};
+
+// Usage examples:
+export interface CreateProjectParams {
+  creatorId: string;
+}
+
+export interface ProjectQueryParams {
+  sort?: 'latest' | 'popular';
+  tags?: string[];
+  page?: string;
+  limit?: string;
 }

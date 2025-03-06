@@ -153,6 +153,8 @@ export interface TCreatorAnalytics {
 // Utility Types
 export type TProjectSort = 'latest' | 'popular' | 'trending';
 
+export type TProjectSortType = `${TProjectSort}`;
+
 export type TCreatorSort = 'followers' | 'projects' | 'joined';
 
 export interface TPaginatedResponse<T> {

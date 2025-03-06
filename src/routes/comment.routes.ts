@@ -1,15 +1,17 @@
 import { CommentHandler } from '@/handlers/CommentHandler';
+import { authenticate } from '@/middlewares/authenticate';
 import AsyncRouter from '@/utils/AsyncRouter';
-import { authenticate } from 'passport';
+import catchAsync from '@/utils/catchAsync';
+import { Router } from 'express';
 
-const router = new AsyncRouter();
+const router = Router();
 const handler = new CommentHandler();
 
-router.post('/', authenticate, handler.create);
-router.get('/:id', handler.getById);
-router.put('/:id', authenticate, handler.update);
-router.delete('/:id', authenticate, handler.delete);
-router.get('/project/:projectId', handler.getProjectComments);
-router.get('/creator/:creatorId', handler.getCreatorComments);
+router.post('/', authenticate, catchAsync(handler.create));
+router.get('/:id', catchAsync(handler.getById));
+router.put('/:id', authenticate, catchAsync(handler.update));
+router.delete('/:id', authenticate, catchAsync(handler.delete));
+router.get('/project/:projectId', catchAsync(handler.getProjectComments));
+router.get('/creator/:creatorId', catchAsync(handler.getCreatorComments));
 
-export default router.router;
+export default router;

@@ -1,3 +1,4 @@
+import { QueryDictionary } from './request';
 import {
   TProjectSort,
   TCreatorSort,
@@ -9,16 +10,17 @@ import {
 /**
  * Base Query Parameters
  */
-export interface BaseQueryParams {
+export interface BaseQueryParams extends QueryDictionary {
   page?: string;
   limit?: string;
+  [key: string]: string | string[] | undefined;
 }
 
 /**
  * Common Path Parameters
  */
-export interface IdParam {
-  id: string;
+export interface IdParam extends QueryDictionary {
+  id?: string;
 }
 
 /**

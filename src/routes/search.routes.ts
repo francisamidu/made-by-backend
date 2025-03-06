@@ -1,14 +1,15 @@
 // src/routes/search.routes.ts
-import AsyncRouter from '@/utils/asyncRouter';
 import { SearchHandler } from '@/handlers/SearchHandler';
+import catchAsync from '@/utils/catchAsync';
+import { Router } from 'express';
 
-const router = new AsyncRouter();
+const router = Router();
 const handler = new SearchHandler();
 
-router.get('/all', handler.searchAll);
-router.get('/creators', handler.searchCreators);
-router.get('/projects', handler.searchProjects);
-router.post('/advanced', handler.advancedSearch);
-router.get('/suggestions', handler.getSearchSuggestions);
+router.get('/all', catchAsync(handler.searchAll));
+router.get('/creators', catchAsync(handler.searchCreators));
+router.get('/projects', catchAsync(handler.searchProjects));
+router.post('/advanced', catchAsync(handler.advancedSearch));
+router.get('/suggestions', catchAsync(handler.getSearchSuggestions));
 
-export default router.router;
+export default router;

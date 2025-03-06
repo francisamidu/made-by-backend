@@ -27,11 +27,13 @@ export class AnalyticsHandler {
    * @route GET /api/analytics/creators/:id
    */
   async getCreatorAnalytics(
-    req: ApiRequest<{ id: string }>,
+    req: ApiRequest<{ id?: string }>,
     res: Response<ApiResponse<TCreatorAnalytics>>,
   ) {
     const { id } = req.params;
-    const analytics = await this.analyticsService.getCreatorAnalytics(id);
+    const analytics = await this.analyticsService.getCreatorAnalytics(
+      String(id),
+    );
 
     res.json({
       data: analytics,
@@ -47,11 +49,13 @@ export class AnalyticsHandler {
    * @route GET /api/analytics/projects/:id
    */
   async getProjectAnalytics(
-    req: ApiRequest<{ id: string }>,
+    req: ApiRequest<{ id?: string }>,
     res: Response<ApiResponse<TProjectAnalytics>>,
   ) {
     const { id } = req.params;
-    const analytics = await this.analyticsService.getProjectAnalytics(id);
+    const analytics = await this.analyticsService.getProjectAnalytics(
+      String(id),
+    );
 
     res.json({
       data: analytics,
@@ -70,8 +74,8 @@ export class AnalyticsHandler {
     req: ApiRequest<{}, {}, { page?: string; limit?: string }>,
     res: Response<ApiResponse<TPaginatedResponse<TCreator>>>,
   ) {
-    const page = parseInt(req.query.page || '1');
-    const limit = parseInt(req.query.limit || '10');
+    const page = parseInt(String(req.query.page || '1'));
+    const limit = parseInt(String(req.query.limit || '10'));
 
     if (isNaN(page) || isNaN(limit)) {
       throw new AppError('Invalid pagination parameters', 400);
@@ -102,8 +106,8 @@ export class AnalyticsHandler {
     req: ApiRequest<{}, {}, { page?: string; limit?: string }>,
     res: Response<ApiResponse<TPaginatedResponse<TProject>>>,
   ) {
-    const page = parseInt(req.query.page || '1');
-    const limit = parseInt(req.query.limit || '10');
+    const page = parseInt(String(req.query.page || '1'));
+    const limit = parseInt(String(req.query.limit || '10'));
 
     if (isNaN(page) || isNaN(limit)) {
       throw new AppError('Invalid pagination parameters', 400);
@@ -152,8 +156,8 @@ export class AnalyticsHandler {
     req: ApiRequest<{}, {}, { startDate: string; endDate: string }>,
     res: Response<ApiResponse<TimeMetrics[]>>,
   ) {
-    const startDate = new Date(req.query.startDate);
-    const endDate = new Date(req.query.endDate);
+    const startDate = new Date(String(req.query.startDate));
+    const endDate = new Date(String(req.query.endDate));
 
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       throw new AppError('Invalid date format. Use ISO 8601 format.', 400);

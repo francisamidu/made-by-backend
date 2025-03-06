@@ -1,27 +1,25 @@
-import { Request, Response } from 'express';
 import { FollowService } from '@/services/FollowService';
-import { TFollow, TCreator, TPaginatedResponse } from '@/types/schema';
+import { ApiRequest } from '@/types/request';
+import { Response } from 'express';
+import { TFollow, TPaginatedResponse, TCreator } from '@/types/schema';
 
 /**
  * Handler for follow-related operations
  */
 export class FollowHandler {
-  private followService: FollowService;
-
-  constructor() {
-    this.followService = new FollowService();
-  }
-
   /**
    * Create a follow relationship
    * @route POST /api/follows
    */
   async create(
-    req: Request<{}, {}, { followerId: string; followingId: string }>,
+    req: ApiRequest<{}, {}, { followerId?: string; followingId?: string }>,
     res: Response<TFollow>,
   ) {
     const { followerId, followingId } = req.body;
-    const follow = await FollowService.create(followerId, followingId);
+    const follow = await FollowService.create(
+      String(followerId),
+      String(followingId),
+    );
     res.status(201).json(follow);
   }
 
@@ -30,11 +28,14 @@ export class FollowHandler {
    * @route DELETE /api/follows/:followerId/:followingId
    */
   async delete(
-    req: Request<{ followerId: string; followingId: string }>,
+    req: ApiRequest<{ followerId?: string; followingId?: string }, {}, {}>,
     res: Response<{ success: boolean }>,
   ) {
     const { followerId, followingId } = req.params;
-    const result = await FollowService.delete(followerId, followingId);
+    const result = await FollowService.delete(
+      String(followerId),
+      String(followingId),
+    );
 
     if (result) {
       res.json({ success: true });
@@ -48,8 +49,8 @@ export class FollowHandler {
    * @route GET /api/follows/followers/:creatorId
    */
   async getFollowers(
-    req: Request<
-      { creatorId: string },
+    req: ApiRequest<
+      { creatorId?: string },
       {},
       {},
       { page?: string; limit?: string }
@@ -57,10 +58,14 @@ export class FollowHandler {
     res: Response<TPaginatedResponse<TCreator | Partial<TCreator>>>,
   ) {
     const { creatorId } = req.params;
-    const page = parseInt(req.query.page || '1');
-    const limit = parseInt(req.query.limit || '10');
+    const page = parseInt(String(req.query.page || '1'));
+    const limit = parseInt(String(req.query.limit || '10'));
 
-    const followers = await FollowService.getFollowers(creatorId, page, limit);
+    const followers = await FollowService.getFollowers(
+      String(creatorId),
+      page,
+      limit,
+    );
     res.json(followers);
   }
 
@@ -69,8 +74,8 @@ export class FollowHandler {
    * @route GET /api/follows/following/:creatorId
    */
   async getFollowing(
-    req: Request<
-      { creatorId: string },
+    req: ApiRequest<
+      { creatorId?: string },
       {},
       {},
       { page?: string; limit?: string }
@@ -78,10 +83,14 @@ export class FollowHandler {
     res: Response<TPaginatedResponse<TCreator | Partial<TCreator>>>,
   ) {
     const { creatorId } = req.params;
-    const page = parseInt(req.query.page || '1');
-    const limit = parseInt(req.query.limit || '10');
+    const page = parseInt(String(req.query.page || '1'));
+    const limit = parseInt(String(req.query.limit || '10'));
 
-    const following = await FollowService.getFollowing(creatorId, page, limit);
+    const following = await FollowService.getFollowing(
+      String(creatorId),
+      page,
+      limit,
+    );
     res.json(following);
   }
 
@@ -90,11 +99,14 @@ export class FollowHandler {
    * @route GET /api/follows/exists/:followerId/:followingId
    */
   async exists(
-    req: Request<{ followerId: string; followingId: string }>,
+    req: ApiRequest<{ followerId?: string; followingId?: string }>,
     res: Response<{ exists: boolean }>,
   ) {
     const { followerId, followingId } = req.params;
-    const exists = await FollowService.exists(followerId, followingId);
+    const exists = await FollowService.exists(
+      String(followerId),
+      String(followingId),
+    );
     res.json({ exists });
   }
 
@@ -103,11 +115,11 @@ export class FollowHandler {
    * @route GET /api/follows/counts/:creatorId
    */
   async getCounts(
-    req: Request<{ creatorId: string }>,
-    res: Response<{ followers: number; following: number }>,
+    req: ApiRequest<{ creatorId?: string }>,
+    res: Response<{ followers?: number; following?: number }>,
   ) {
     const { creatorId } = req.params;
-    const counts = await FollowService.getCounts(creatorId);
+    const counts = await FollowService.getCounts(String(creatorId));
     res.json(counts);
   }
 }

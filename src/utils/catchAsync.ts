@@ -1,5 +1,11 @@
 // src/utils/catchAsync.ts
 
+import {
+  ApiRequest,
+  ApiRequestHandler,
+  ParamsDictionary,
+  QueryDictionary,
+} from '@/types/request';
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 
 /**
@@ -9,23 +15,16 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
  * @param fn - The async route handler function to be wrapped
  * @returns A new route handler that automatically catches and forwards errors to Express error handler
  *
- * @example
- * // Instead of:
- * async function handler(req, res, next) {
- *   try {
- *     await someAsyncOperation();
- *   } catch (error) {
- *     next(error);
- *   }
- * }
- *
- * // You can write:
- * const handler = catchAsync(async (req, res) => {
- *   await someAsyncOperation();
- * });
  */
-const catchAsync = (fn: RequestHandler): RequestHandler => {
-  return (req: Request, res: Response, next: NextFunction) => {
+const catchAsync = (fn: {
+  (req: ApiRequest, res: Response, next: NextFunction): Promise<void>;
+  (
+    arg0: ApiRequest<ParamsDictionary, any, any, QueryDictionary>,
+    arg1: Response<any, Record<string, any>>,
+    arg2: NextFunction,
+  ): any;
+}) => {
+  return (req: ApiRequest, res: Response, next: NextFunction): void => {
     // Wrap the execution in Promise.resolve to handle both async and sync errors
     Promise.resolve(fn(req, res, next)).catch(next);
   };

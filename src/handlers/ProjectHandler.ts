@@ -9,6 +9,7 @@ import {
   TPaginatedResponse,
   TProjectResponse,
   TProject,
+  TProjectSortType,
 } from '@/types/schema';
 import { AppError } from '@/utils/errors';
 import {
@@ -32,8 +33,8 @@ export class ProjectHandler {
     res: Response<ApiResponse<TPaginatedResponse<TProjectResponse>>>,
   ) {
     const { page = '1', limit = '10' } = req.query;
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
+    const pageNumber = parseInt(String(page));
+    const limitNumber = parseInt(String(limit));
 
     if (isNaN(pageNumber) || isNaN(limitNumber)) {
       throw new AppError('Invalid pagination parameters', 400);
@@ -57,11 +58,11 @@ export class ProjectHandler {
    * @route POST /api/projects
    */
   async create(
-    req: ApiRequest<{ creatorId: string }, TCreateProjectRequest>,
+    req: ApiRequest<{ creatorId?: string }, TCreateProjectRequest>,
     res: Response<ApiResponse<TProject>>,
   ) {
     const { creatorId } = req.params;
-    const project = await ProjectService.create(creatorId, req.body);
+    const project = await ProjectService.create(String(creatorId), req.body);
 
     res.status(201).json({
       data: project,
@@ -80,7 +81,7 @@ export class ProjectHandler {
     req: ApiRequest<ProjectPathParams>,
     res: Response<ApiResponse<TProjectResponse>>,
   ) {
-    const project = await ProjectService.findById(req.params.id);
+    const project = await ProjectService.findById(String(req.params.id));
 
     if (!project) {
       throw new AppError('Project not found', 404);
@@ -104,7 +105,10 @@ export class ProjectHandler {
     req: ApiRequest<ProjectPathParams, Partial<TCreateProjectRequest>>,
     res: Response<ApiResponse<TProject>>,
   ) {
-    const updated = await ProjectService.update(req.params.id, req.body);
+    const updated = await ProjectService.update(
+      String(req.params.id),
+      req.body,
+    );
 
     if (!updated) {
       throw new AppError('Project not found', 404);
@@ -127,7 +131,7 @@ export class ProjectHandler {
     req: ApiRequest<ProjectPathParams>,
     res: Response<ApiResponse<SuccessResponse>>,
   ) {
-    const deleted = await ProjectService.delete(req.params.id);
+    const deleted = await ProjectService.delete(String(req.params.id));
 
     if (!deleted) {
       throw new AppError('Project not found', 404);
@@ -151,21 +155,22 @@ export class ProjectHandler {
     res: Response<ApiResponse<TPaginatedResponse<TProjectResponse>>>,
   ) {
     const { tags, page = '1', limit = '10' } = req.query;
+    const projectTags = String(tags);
 
-    if (!tags) {
+    if (!projectTags) {
       throw new AppError('Tags are required', 400);
     }
 
     const projects = await ProjectService.getByTags(
-      tags.split(','),
-      parseInt(page),
-      parseInt(limit),
+      projectTags.split(','),
+      parseInt(String(page)),
+      parseInt(String(limit)),
     );
 
     res.json({
       data: projects,
       meta: {
-        tags: tags.split(','),
+        tags: projectTags.split(','),
         page: projects.page,
         limit: projects.limit,
         total: projects.total,
@@ -185,9 +190,9 @@ export class ProjectHandler {
     const { sortBy, page = '1', limit = '10' } = req.query;
 
     const projects = await ProjectService.getSorted(
-      sortBy,
-      parseInt(page),
-      parseInt(limit),
+      sortBy as TProjectSortType,
+      parseInt(String(page)),
+      parseInt(String(limit)),
     );
 
     res.json({
@@ -211,7 +216,10 @@ export class ProjectHandler {
     res: Response<ApiResponse<LikeResponse>>,
   ) {
     const { increment = true } = req.body;
-    const likes = await ProjectService.toggleLike(req.params.id, increment);
+    const likes = await ProjectService.toggleLike(
+      String(req.params.id),
+      increment,
+    );
 
     res.json({
       data: { likes },

@@ -36,6 +36,8 @@
     "db:ui": "bun drizzle-kit studio --port 3000 --verbose",
     "db:generate": "bun drizzle-kit generate",
     "db:migrate": "bun drizzle-kit migrate",
+    "db:help":"bun drizzle-kit push -h",
+    "db:up":"bun drizzle-kit up",
     "db:push": "bun drizzle-kit push",
     "db:seed": "bun src/db/seeder.ts",
     "start": "node dist/app.js",

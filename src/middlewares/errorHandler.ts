@@ -15,7 +15,7 @@ import logger from '@/logger';
  * @param _next - Express next function (unused but required for middleware signature)
  */
 export function errorHandler(
-  err: Error,
+  err: AppError,
   req: Request,
   res: Response,
   _next: NextFunction,
@@ -30,28 +30,16 @@ export function errorHandler(
   });
 
   // Set default error values for unknown errors
-  let statusCode = 500;
-  let message = 'Internal Server Error';
-  let errors: string | undefined = undefined;
+  let statusCode = err.statusCode || 500;
+  let message = err.message || 'Something went wrong';
 
-  // Handle known application errors with custom status codes and messages
-  if (err instanceof AppError) {
-    statusCode = err.statusCode;
-    message = err.message;
-    errors = err.name;
-  }
-
+  console.log({ err });
   // Construct standardized error response object
   const response: ErrorResponse = {
     success: false,
     status: statusCode,
     message,
   };
-
-  // Add additional error details if available
-  if (errors) {
-    response.errors = errors;
-  }
 
   // Send error response to client
   res.status(statusCode).json(response);

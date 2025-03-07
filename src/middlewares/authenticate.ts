@@ -1,22 +1,23 @@
 // src/middlewares/auth.ts
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '@/services/AuthService';
-import { AppError } from '@/utils/errors';
+import { AppError, UnauthorizedError } from '@/utils/errors';
 import { verifyJWT } from '@/utils/jwt';
 import { ApiRequest, ApiHandler } from '@/types/request';
 import catchAsync from '@/utils/catchAsync';
 import { ApiResponse } from '@/types/response';
 import { TCreator } from '@/types/schema';
+import logger from '@/logger';
 
 /**
  * Authentication middleware
  * Verifies JWT token and attaches user to request
  */
 export const authenticate = catchAsync(
-  async (req: ApiRequest, res: Response, next: NextFunction) => {
+  async (req: ApiRequest, _: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
     if (!authHeader?.startsWith('Bearer ')) {
-      throw new AppError('No token provided', 401);
+      throw new UnauthorizedError('No token provided');
     }
 
     const token = authHeader.split(' ')[1];
@@ -26,7 +27,7 @@ export const authenticate = catchAsync(
 
     const decoded = await verifyJWT(token);
     if (!decoded?.id) {
-      throw new AppError('Invalid token', 401);
+      throw new UnauthorizedError('Invalid token');
     }
 
     const user = (await AuthService.validateSession(token)) as TCreator;

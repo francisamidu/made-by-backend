@@ -1,5 +1,4 @@
 import {
-  serial,
   text,
   varchar,
   timestamp,
@@ -10,11 +9,10 @@ import {
   uniqueIndex,
   index,
   pgSchema,
-  type PgTable,
-  AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-
+import { v4 as uuidgene } from 'uuid';
+console.log(uuidgene().slice(0, 5));
 /**
  * Database Schema Definition
  * Defines the structure and relationships for the MadeBy creative platform
@@ -107,10 +105,10 @@ export const projects = baseSchema.table(
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
   (table) => [
-    index('creator_idx').on(table.creatorId),
+    index('created_by_idx').on(table.creatorId),
     index('likes_idx').on(table.likes),
     index('views_idx').on(table.views),
-    index('created_idx').on(table.createdAt),
+    index('created_on_idx').on(table.createdAt),
   ],
 );
 

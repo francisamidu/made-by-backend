@@ -57,7 +57,7 @@ const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
     info: {
-      title: 'Medisync API',
+      title: 'MadeBy API',
       version: '1.0.0',
       description: 'API documentation',
     },
@@ -98,9 +98,7 @@ app.use(errorHandler);
  * Start the server and listen on configured port
  */
 const server = app.listen(env.APP_PORT, () => {
-  logger.info(
-    `🚀 Medisync backend running on http://localhost:${env.APP_PORT}`,
-  );
+  logger.info(`🚀 MadeBy backend running on http://localhost:${env.APP_PORT}`);
 });
 
 /**

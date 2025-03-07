@@ -7,8 +7,9 @@ import commentRoutes from './comment.routes';
 import followRoutes from './follower.routes';
 import projectRoutes from './project.routes';
 import searchRoutes from './search.routes';
+import { Router } from 'express';
 
-const { router } = new AsyncRouter();
+const router = Router();
 
 // API Routes
 router.use('/auth', authRoutes);
@@ -18,5 +19,11 @@ router.use('/comments', commentRoutes);
 router.use('/follows', followRoutes);
 router.use('/projects', projectRoutes);
 router.use('/search', searchRoutes);
+router.all('*', (_, res) => {
+  res.json({
+    message: 'Welcome to the Made By RESTAPI',
+    success: true,
+  });
+});
 
 export default router;

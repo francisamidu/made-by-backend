@@ -1,125 +1,29 @@
 {
-  "id": "59b35337-edd8-45e5-8c72-41372fe236de",
+  "id": "c2f1f457-8435-439f-bcd8-52d2f8215c13",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "medisync.categories": {
-      "name": "categories",
-      "schema": "medisync",
+    "madeby.comments": {
+      "name": "comments",
+      "schema": "madeby",
       "columns": {
-        "category_id": {
-          "name": "category_id",
-          "type": "serial",
+        "id": {
+          "name": "id",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
-        },
-        "category_name": {
-          "name": "category_name",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "icon_url": {
-          "name": "icon_url",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "parent_category_id": {
-          "name": "parent_category_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "default": "gen_random_uuid()"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "category_name_idx": {
-          "name": "category_name_idx",
-          "columns": [
-            {
-              "expression": "category_name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "parent_category_idx": {
-          "name": "parent_category_idx",
-          "columns": [
-            {
-              "expression": "parent_category_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "categories_parent_category_id_categories_category_id_fk": {
-          "name": "categories_parent_category_id_categories_category_id_fk",
-          "tableFrom": "categories",
-          "tableTo": "categories",
-          "schemaTo": "medisync",
-          "columnsFrom": [
-            "parent_category_id"
-          ],
-          "columnsTo": [
-            "category_id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "medisync.educational_insights": {
-      "name": "educational_insights",
-      "schema": "medisync",
-      "columns": {
-        "insight_id": {
-          "name": "insight_id",
-          "type": "serial",
-          "primaryKey": true,
           "notNull": true
         },
-        "term_id": {
-          "name": "term_id",
-          "type": "integer",
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -129,32 +33,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "content_type": {
-          "name": "content_type",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'text'"
-        },
-        "media_url": {
-          "name": "media_url",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "source": {
-          "name": "source",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_approved": {
-          "name": "is_approved",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -171,26 +49,11 @@
         }
       },
       "indexes": {
-        "insight_unique": {
-          "name": "insight_unique",
+        "project_idx": {
+          "name": "project_idx",
           "columns": [
             {
-              "expression": "insight_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "term_id_idx": {
-          "name": "term_id_idx",
-          "columns": [
-            {
-              "expression": "term_id",
+              "expression": "project_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -201,11 +64,26 @@
           "method": "btree",
           "with": {}
         },
-        "is_approved_idx": {
-          "name": "is_approved_idx",
+        "creator_idx": {
+          "name": "creator_idx",
           "columns": [
             {
-              "expression": "is_approved",
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "created_idx": {
+          "name": "created_idx",
+          "columns": [
+            {
+              "expression": "created_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -218,16 +96,30 @@
         }
       },
       "foreignKeys": {
-        "educational_insights_term_id_terminologies_term_id_fk": {
-          "name": "educational_insights_term_id_terminologies_term_id_fk",
-          "tableFrom": "educational_insights",
-          "tableTo": "terminologies",
-          "schemaTo": "medisync",
+        "comments_project_id_projects_id_fk": {
+          "name": "comments_project_id_projects_id_fk",
+          "tableFrom": "comments",
+          "tableTo": "projects",
+          "schemaTo": "madeby",
           "columnsFrom": [
-            "term_id"
+            "project_id"
           ],
           "columnsTo": [
-            "term_id"
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "comments_creator_id_creators_id_fk": {
+          "name": "comments_creator_id_creators_id_fk",
+          "tableFrom": "comments",
+          "tableTo": "creators",
+          "schemaTo": "madeby",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "cascade"
@@ -239,276 +131,86 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "medisync.search_logs": {
-      "name": "search_logs",
-      "schema": "medisync",
+    "madeby.creators": {
+      "name": "creators",
+      "schema": "madeby",
       "columns": {
-        "log_id": {
-          "name": "log_id",
-          "type": "serial",
+        "id": {
+          "name": "id",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "search_query": {
-          "name": "search_query",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "search_time": {
-          "name": "search_time",
-          "type": "timestamp",
-          "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "default": "gen_random_uuid()"
         },
-        "ip_address": {
-          "name": "ip_address",
-          "type": "inet",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "device_info": {
-          "name": "device_info",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "log_unique": {
-          "name": "log_unique",
-          "columns": [
-            {
-              "expression": "log_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "search_query_idx": {
-          "name": "search_query_idx",
-          "columns": [
-            {
-              "expression": "search_query",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "search_time_idx": {
-          "name": "search_time_idx",
-          "columns": [
-            {
-              "expression": "search_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "search_logs_user_id_users_user_id_fk": {
-          "name": "search_logs_user_id_users_user_id_fk",
-          "tableFrom": "search_logs",
-          "tableTo": "users",
-          "schemaTo": "medisync",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "user_id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "medisync.terminologies": {
-      "name": "terminologies",
-      "schema": "medisync",
-      "columns": {
-        "term_id": {
-          "name": "term_id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "term": {
-          "name": "term",
-          "type": "varchar(255)",
+        "name": {
+          "name": "name",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
         },
-        "definition": {
-          "name": "definition",
+        "avatar": {
+          "name": "avatar",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "reference_url": {
-          "name": "reference_url",
-          "type": "varchar(255)",
+        "bio": {
+          "name": "bio",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "category_id": {
-          "name": "category_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "terminology_status",
-          "typeSchema": "medisync",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'Draft'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "term_idx": {
-          "name": "term_idx",
-          "columns": [
-            {
-              "expression": "term",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "category_id_idx": {
-          "name": "category_id_idx",
-          "columns": [
-            {
-              "expression": "category_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "terminologies_category_id_categories_category_id_fk": {
-          "name": "terminologies_category_id_categories_category_id_fk",
-          "tableFrom": "terminologies",
-          "tableTo": "categories",
-          "schemaTo": "medisync",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "category_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "medisync.users": {
-      "name": "users",
-      "schema": "medisync",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
         },
         "username": {
           "name": "username",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "password_hash": {
-          "name": "password_hash",
-          "type": "varchar(255)",
+        "location": {
+          "name": "location",
+          "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "email": {
           "name": "email",
           "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "role": {
-          "name": "role",
-          "type": "user_roles",
-          "typeSchema": "medisync",
+        "banner_image": {
+          "name": "banner_image",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "is_email_verified": {
-          "name": "is_email_verified",
+        "is_available_for_hire": {
+          "name": "is_available_for_hire",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "default": false
         },
-        "is_active": {
-          "name": "is_active",
-          "type": "boolean",
+        "stats": {
+          "name": "stats",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
-          "default": true
+          "default": "'{\"projectViews\":0,\"appreciations\":0,\"followers\":0,\"following\":0}'::jsonb"
+        },
+        "social_links": {
+          "name": "social_links",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "professional_info": {
+          "name": "professional_info",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"title\":\"\",\"skills\":[],\"tools\":[],\"collaborators\":[],\"portfolioLink\":\"\"}'::jsonb"
         },
         "created_at": {
           "name": "created_at",
@@ -556,11 +258,26 @@
           "method": "btree",
           "with": {}
         },
-        "is_active_idx": {
-          "name": "is_active_idx",
+        "location_idx": {
+          "name": "location_idx",
           "columns": [
             {
-              "expression": "is_active",
+              "expression": "location",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "available_idx": {
+          "name": "available_idx",
+          "columns": [
+            {
+              "expression": "is_available_for_hire",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -574,34 +291,298 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "creators_username_unique": {
+          "name": "creators_username_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "username"
+          ]
+        },
+        "creators_email_unique": {
+          "name": "creators_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "madeby.follows": {
+      "name": "follows",
+      "schema": "madeby",
+      "columns": {
+        "follower_id": {
+          "name": "follower_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "following_id": {
+          "name": "following_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "follower_following_idx": {
+          "name": "follower_following_idx",
+          "columns": [
+            {
+              "expression": "follower_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "following_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "follower_idx": {
+          "name": "follower_idx",
+          "columns": [
+            {
+              "expression": "follower_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "following_idx": {
+          "name": "following_idx",
+          "columns": [
+            {
+              "expression": "following_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "follows_follower_id_creators_id_fk": {
+          "name": "follows_follower_id_creators_id_fk",
+          "tableFrom": "follows",
+          "tableTo": "creators",
+          "schemaTo": "madeby",
+          "columnsFrom": [
+            "follower_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "follows_following_id_creators_id_fk": {
+          "name": "follows_following_id_creators_id_fk",
+          "tableFrom": "follows",
+          "tableTo": "creators",
+          "schemaTo": "madeby",
+          "columnsFrom": [
+            "following_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "madeby.projects": {
+      "name": "projects",
+      "schema": "madeby",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "images": {
+          "name": "images",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "likes": {
+          "name": "likes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "views": {
+          "name": "views",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "tags": {
+          "name": "tags",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "created_by_idx": {
+          "name": "created_by_idx",
+          "columns": [
+            {
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "likes_idx": {
+          "name": "likes_idx",
+          "columns": [
+            {
+              "expression": "likes",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "views_idx": {
+          "name": "views_idx",
+          "columns": [
+            {
+              "expression": "views",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "created_on_idx": {
+          "name": "created_on_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "projects_creator_id_creators_id_fk": {
+          "name": "projects_creator_id_creators_id_fk",
+          "tableFrom": "projects",
+          "tableTo": "creators",
+          "schemaTo": "madeby",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     }
   },
-  "enums": {
-    "medisync.terminology_status": {
-      "name": "terminology_status",
-      "schema": "medisync",
-      "values": [
-        "Draft",
-        "Reviewed",
-        "Approved"
-      ]
-    },
-    "medisync.user_roles": {
-      "name": "user_roles",
-      "schema": "medisync",
-      "values": [
-        "Admin",
-        "Editor",
-        "Viewer"
-      ]
-    }
-  },
+  "enums": {},
   "schemas": {
-    "medisync": "medisync"
+    "madeby": "madeby"
   },
   "sequences": {},
   "roles": {},

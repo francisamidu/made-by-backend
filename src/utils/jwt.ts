@@ -1,15 +1,9 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import env from '@/env';
+import { JWTPayload } from '@/types/jwt';
 
 const JWT_SECRET = env.JWT_SECRET;
-
-interface JWTPayload {
-  id: string;
-  email?: string;
-  iat?: number;
-  exp?: number;
-}
 
 /**
  * Generates a JWT token
@@ -32,7 +26,9 @@ export const verifyJWT = async (token: string): Promise<JWTPayload> => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     return decoded;
-  } catch (error) {
-    throw new Error('Invalid token');
+  } catch {
+    return {
+      id: undefined,
+    };
   }
 };

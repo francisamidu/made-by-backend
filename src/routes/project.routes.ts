@@ -1,5 +1,4 @@
 import { ProjectHandler } from '@/handlers/ProjectHandler';
-import AsyncRouter from '@/utils/AsyncRouter';
 import { authenticate } from '@/middlewares/authenticate';
 import { Router } from 'express';
 import catchAsync from '@/utils/catchAsync';

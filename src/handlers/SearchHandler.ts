@@ -19,7 +19,7 @@ export class SearchHandler {
    * Perform global search
    * @route GET /api/search/all
    */
-  async searchAll(
+  static async searchAll(
     req: ApiRequest<{}, {}, SearchQueryParams>,
     res: Response<ApiResponse<GlobalSearchReults>>,
   ) {
@@ -29,15 +29,15 @@ export class SearchHandler {
       throw new AppError('Search query is required', 400);
     }
 
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
+    const pageNumber = parseInt(page as string);
+    const limitNumber = parseInt(limit as string);
 
     if (isNaN(pageNumber) || isNaN(limitNumber)) {
       throw new AppError('Invalid pagination parameters', 400);
     }
 
     const results = await SearchService.searchAll(
-      query,
+      query as string,
       pageNumber,
       limitNumber,
     );
@@ -59,7 +59,7 @@ export class SearchHandler {
    * Search creators
    * @route GET /api/search/creators
    */
-  async searchCreators(
+  static async searchCreators(
     req: ApiRequest<{}, {}, SearchQueryParams>,
     res: Response<
       ApiResponse<TPaginatedResponse<TCreator | Partial<TCreator>>>
@@ -71,15 +71,15 @@ export class SearchHandler {
       throw new AppError('Search query is required', 400);
     }
 
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
+    const pageNumber = parseInt(page as string);
+    const limitNumber = parseInt(limit as string);
 
     if (isNaN(pageNumber) || isNaN(limitNumber)) {
       throw new AppError('Invalid pagination parameters', 400);
     }
 
     const results = await SearchService.searchCreators(
-      query,
+      query as string,
       pageNumber,
       limitNumber,
     );
@@ -101,7 +101,7 @@ export class SearchHandler {
    * Search projects
    * @route GET /api/search/projects
    */
-  async searchProjects(
+  static async searchProjects(
     req: ApiRequest<{}, {}, SearchQueryParams>,
     res: Response<ApiResponse<TPaginatedResponse<TProjectResponse>>>,
   ) {
@@ -111,15 +111,15 @@ export class SearchHandler {
       throw new AppError('Search query is required', 400);
     }
 
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
+    const pageNumber = parseInt(page as string);
+    const limitNumber = parseInt(limit as string);
 
     if (isNaN(pageNumber) || isNaN(limitNumber)) {
       throw new AppError('Invalid pagination parameters', 400);
     }
 
     const results = await SearchService.searchProjects(
-      query,
+      query as string,
       pageNumber,
       limitNumber,
     );
@@ -141,7 +141,7 @@ export class SearchHandler {
    * Advanced search
    * @route POST /api/search/advanced
    */
-  async advancedSearch(
+  static async advancedSearch(
     req: ApiRequest<{}, TSearchParams>,
     res: Response<ApiResponse<TPaginatedResponse<TProjectResponse>>>,
   ) {
@@ -170,7 +170,7 @@ export class SearchHandler {
    * Get search suggestions
    * @route GET /api/search/suggestions
    */
-  async getSearchSuggestions(
+  static async getSearchSuggestions(
     req: ApiRequest<{}, {}, SearchQueryParams>,
     res: Response<ApiResponse<string[]>>,
   ) {
@@ -180,14 +180,14 @@ export class SearchHandler {
       throw new AppError('Search query is required', 400);
     }
 
-    const limitNumber = parseInt(limit);
+    const limitNumber = parseInt(limit as string);
 
     if (isNaN(limitNumber)) {
       throw new AppError('Invalid limit parameter', 400);
     }
 
     const suggestions = await SearchService.getSearchSuggestions(
-      query,
+      query as string,
       limitNumber,
     );
 

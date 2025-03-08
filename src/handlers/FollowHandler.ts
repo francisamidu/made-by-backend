@@ -11,7 +11,7 @@ export class FollowHandler {
    * Create a follow relationship
    * @route POST /api/follows
    */
-  async create(
+  static async create(
     req: ApiRequest<{}, {}, { followerId?: string; followingId?: string }>,
     res: Response<TFollow>,
   ) {
@@ -27,7 +27,7 @@ export class FollowHandler {
    * Remove a follow relationship
    * @route DELETE /api/follows/:followerId/:followingId
    */
-  async delete(
+  static async delete(
     req: ApiRequest<{ followerId?: string; followingId?: string }, {}, {}>,
     res: Response<{ success: boolean }>,
   ) {
@@ -48,7 +48,7 @@ export class FollowHandler {
    * Get followers for a creator
    * @route GET /api/follows/followers/:creatorId
    */
-  async getFollowers(
+  static async getFollowers(
     req: ApiRequest<
       { creatorId?: string },
       {},
@@ -73,7 +73,7 @@ export class FollowHandler {
    * Get creators being followed by a creator
    * @route GET /api/follows/following/:creatorId
    */
-  async getFollowing(
+  static async getFollowing(
     req: ApiRequest<
       { creatorId?: string },
       {},
@@ -98,7 +98,7 @@ export class FollowHandler {
    * Check if a follow relationship exists
    * @route GET /api/follows/exists/:followerId/:followingId
    */
-  async exists(
+  static async exists(
     req: ApiRequest<{ followerId?: string; followingId?: string }>,
     res: Response<{ exists: boolean }>,
   ) {
@@ -114,7 +114,7 @@ export class FollowHandler {
    * Get follow counts for a creator
    * @route GET /api/follows/counts/:creatorId
    */
-  async getCounts(
+  static async getCounts(
     req: ApiRequest<{ creatorId?: string }>,
     res: Response<{ followers?: number; following?: number }>,
   ) {

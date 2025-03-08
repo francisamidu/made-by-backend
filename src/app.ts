@@ -48,7 +48,6 @@ app.use(loggerMiddleware);
 configurePassport();
 app.use(passport.initialize());
 
-console.log(`${env.BACKEND_URL}/${env.GITHUB_CALLBACK_URL}`);
 /**
  * Debug endpoint to list all available routes
  */

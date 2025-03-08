@@ -19,7 +19,7 @@ export class CreatorHandler {
    * Get all creators
    * @route GET /api/creators
    */
-  async getAll(
+  static async getAll(
     req: ApiRequest<{}, {}, CreatorQueryParams>,
     res: Response<
       ApiResponse<TCreator[] | Partial<TCreator>[] | TableSchema['creators']>
@@ -39,11 +39,11 @@ export class CreatorHandler {
    * Get creator by ID
    * @route GET /api/creators/:id
    */
-  async getById(
+  static async getById(
     req: ApiRequest<CreatorPathParams>,
     res: Response<ApiResponse<TCreator | Partial<TCreator>>>,
   ) {
-    const creator = await CreatorService.findById(req.params.id);
+    const creator = await CreatorService.findById(req.params.id as string);
 
     if (!creator) {
       throw new AppError('Creator not found', 404);
@@ -62,7 +62,7 @@ export class CreatorHandler {
    * Get creator by username
    * @route GET /api/creators/username/:username
    */
-  async getByUsername(
+  static async getByUsername(
     req: ApiRequest<CreatorPathParams>,
     res: Response<ApiResponse<TCreator | Partial<TCreator>>>,
   ) {
@@ -87,7 +87,7 @@ export class CreatorHandler {
    * Create new creator
    * @route POST /api/creators
    */
-  async create(
+  static async create(
     req: ApiRequest<{}, CreateCreatorBody>,
     res: Response<ApiResponse<TCreator | Partial<TCreator>>>,
   ) {
@@ -106,11 +106,14 @@ export class CreatorHandler {
    * Update creator
    * @route PUT /api/creators/:id
    */
-  async update(
+  static async update(
     req: ApiRequest<CreatorPathParams, UpdateCreatorBody>,
     res: Response<ApiResponse<TCreator | Partial<TCreator>>>,
   ) {
-    const updated = await CreatorService.update(req.params.id, req.body);
+    const updated = await CreatorService.update(
+      req.params.id as string,
+      req.body,
+    );
 
     if (!updated) {
       throw new AppError('Creator not found', 404);
@@ -129,12 +132,12 @@ export class CreatorHandler {
    * Update professional info
    * @route PUT /api/creators/:id/professional-info
    */
-  async updateProfessionalInfo(
+  static async updateProfessionalInfo(
     req: ApiRequest<CreatorPathParams, Partial<TProfessionalInfo>>,
     res: Response<ApiResponse<TCreator | Partial<TCreator>>>,
   ) {
     const updated = await CreatorService.updateProfessionalInfo(
-      req.params.id,
+      req.params.id as string,
       req.body,
     );
 
@@ -155,11 +158,14 @@ export class CreatorHandler {
    * Update creator stats
    * @route PUT /api/creators/:id/stats
    */
-  async updateStats(
+  static async updateStats(
     req: ApiRequest<CreatorPathParams, Partial<TCreatorStats>>,
     res: Response<ApiResponse<TCreator | Partial<TCreator>>>,
   ) {
-    const updated = await CreatorService.updateStats(req.params.id, req.body);
+    const updated = await CreatorService.updateStats(
+      req.params.id as string,
+      req.body,
+    );
 
     if (!updated) {
       throw new AppError('Creator not found', 404);
@@ -178,11 +184,11 @@ export class CreatorHandler {
    * Delete creator
    * @route DELETE /api/creators/:id
    */
-  async delete(
+  static async delete(
     req: ApiRequest<CreatorPathParams>,
     res: Response<ApiResponse<{ success: boolean }>>,
   ) {
-    const success = await CreatorService.delete(req.params.id);
+    const success = await CreatorService.delete(req.params.id as string);
 
     if (!success) {
       throw new AppError('Creator not found', 404);
@@ -201,7 +207,7 @@ export class CreatorHandler {
    * Get creators by location
    * @route GET /api/creators/location/:location
    */
-  async findByLocation(
+  static async findByLocation(
     req: ApiRequest<CreatorPathParams, {}, CreatorQueryParams>,
     res: Response<ApiResponse<TCreator[] | Partial<TCreator>[]>>,
   ) {
@@ -223,7 +229,7 @@ export class CreatorHandler {
    * Get available creators
    * @route GET /api/creators/available
    */
-  async findAvailable(
+  static async findAvailable(
     req: ApiRequest<{}, {}, CreatorQueryParams>,
     res: Response<ApiResponse<TCreator[] | Partial<TCreator>[]>>,
   ) {
@@ -242,11 +248,13 @@ export class CreatorHandler {
    * Get creator followers
    * @route GET /api/creators/:id/followers
    */
-  async getFollowers(
+  static async getFollowers(
     req: ApiRequest<CreatorPathParams, {}, CreatorQueryParams>,
     res: Response<ApiResponse<TCreator[] | Partial<TCreator>[]>>,
   ) {
-    const followers = await CreatorService.getFollowers(req.params.id);
+    const followers = await CreatorService.getFollowers(
+      req.params.id as string,
+    );
 
     res.json({
       data: followers,
@@ -262,11 +270,13 @@ export class CreatorHandler {
    * Get creators being followed
    * @route GET /api/creators/:id/following
    */
-  async getFollowing(
+  static async getFollowing(
     req: ApiRequest<CreatorPathParams, {}, CreatorQueryParams>,
     res: Response<ApiResponse<TCreator[] | Partial<TCreator>[]>>,
   ) {
-    const following = await CreatorService.getFollowing(req.params.id);
+    const following = await CreatorService.getFollowing(
+      req.params.id as string,
+    );
 
     res.json({
       data: following,
@@ -282,7 +292,7 @@ export class CreatorHandler {
    * Check if following
    * @route GET /api/creators/is-following
    */
-  async isFollowing(
+  static async isFollowing(
     req: ApiRequest<{}, {}, { followerId: string; followingId: string }>,
     res: Response<ApiResponse<{ isFollowing: boolean }>>,
   ) {
@@ -293,8 +303,8 @@ export class CreatorHandler {
     }
 
     const isFollowing = await CreatorService.isFollowing(
-      followerId,
-      followingId,
+      followerId as string,
+      followingId as string,
     );
 
     res.json({

@@ -1,121 +1,160 @@
-# node-typescript-boilerplate
+# MadeBy - Creator Portfolio Platform
 
-[![Sponsor][sponsor-badge]][sponsor]
-[![TypeScript version][ts-badge]][typescript-5-7]
-[![Node.js version][nodejs-badge]][nodejs]
-[![APLv2][license-badge]][license]
-[![Build Status - GitHub Actions][gha-badge]][gha-ci]
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node.js](https://img.shields.io/badge/Node.js-20.x-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)
 
-👩🏻‍💻 Developer Ready: A comprehensive template. Works out of the box for most [Node.js][nodejs] projects.
+MadeBy is a modern portfolio platform built for creators to showcase their work, connect with clients, and manage their creative business. Built with TypeScript, Node.js, and modern web technologies.
 
-🏃🏽 Instant Value: All basic tools included and configured:
+## ✨ Features
 
-- [TypeScript][typescript] [5.7][typescript-5-7]
-- [ESM][esm]
-- [ESLint][eslint] with some initial rules recommendation
-- [Vitest][vitest] for fast unit testing and code coverage
-- Type definitions for Node.js
-- [Prettier][prettier] to enforce consistent code style
-- NPM [scripts](#available-scripts) for common operations
-- [EditorConfig][editorconfig] for consistent coding style
-- Reproducible environments thanks to [Volta][volta]
-- Example configuration for [GitHub Actions][gh-actions]
-- Simple example of TypeScript code and unit test
+- 🎨 Portfolio Creation & Management
+- 👥 Creator Profiles
+- 💼 Project Showcase
+- 🤝 Client Collaboration Tools
+- 📊 Analytics Dashboard
+- 🔒 Secure Authentication
+- 🌐 Social Integration
 
-🤲 Free as in speech: available under the APLv2 license.
+## 🚀 Tech Stack
 
-## Getting Started
+- **Backend**: Node.js, TypeScript, Express
+- **Database**: PostgreSQL with Drizzle ORM
+- **Authentication**: OAuth (Google, GitHub, Twitter)
+- **Cloud Storage**: Cloudinary storage
+- **API**: RESTful with OpenAPI/Swagger
+- **Testing**: Jest
+- **CI/CD**: GitHub Actions
 
-This project is intended to be used with the latest Active LTS release of [Node.js][nodejs].
+## 📋 Prerequisites
 
-### Use as a repository template
+- Node.js 20.x or later
+- PostgreSQL 15.x or later
+- bun or pnpm
+- Cloudinary Account (for S3 storage)
 
-To start, just click the **[Use template][repo-template-action]** link (or the green button). Start adding your code in the `src` and unit tests in the `__tests__` directories.
+## 🛠 Installation
 
-### Clone repository
-
-To clone the repository, use the following commands:
-
-```sh
-git clone https://github.com/jsynowiec/node-typescript-boilerplate
-cd node-typescript-boilerplate
-npm install
+1. Clone the repository:
+```bash
+git clone https://github.com/francisamidu/made-by-backend.git
+cd madeby
 ```
 
-### Download latest release
-
-Download and unzip the current **main** branch or one of the tags:
-
-```sh
-wget https://github.com/jsynowiec/node-typescript-boilerplate/archive/main.zip -O node-typescript-boilerplate.zip
-unzip node-typescript-boilerplate.zip && rm node-typescript-boilerplate.zip
+2. Install dependencies:
+```bash
+bun install
 ```
 
-## Available Scripts
+3. Set up environment variables:
+```bash
+cp .env.example .env
+```
 
-- `clean` - remove coverage data, cache and transpiled files,
-- `prebuild` - lint source files and tests before building,
-- `build` - transpile TypeScript to ES6,
-- `build:watch` - interactive watch mode to automatically transpile source files,
-- `lint` - lint source files and tests,
-- `prettier` - reformat files,
-- `test` - run tests,
-- `test:watch` - interactive watch mode to automatically re-run tests
-- `test:coverage` - run test and print out test coverage
+4. Configure your environment variables:
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/madeby
+JWT_SECRET=your_jwt_secret...
+```
 
-## Additional Information
+5. Run database migrations:
+```bash
+bun run db:migrate
+```
 
-### Why include Volta
+6. Start the development server:
+```bash
+bun run dev
+```
 
-I recommend to [install][volta-getting-started] Volta and use it to manage your project's toolchain.
+## 📚 Available Scripts
 
-[Volta][volta]’s toolchain always keeps track of where you are, it makes sure the tools you use always respect the settings of the project you’re working on. This means you don’t have to worry about changing the state of your installed software when switching between projects. For example, it's [used by engineers at LinkedIn][volta-tomdale] to standardize tools and have reproducible development environments.
+- `bun run dev` - Start development server
+- `bun run build` - Build for production
+- `bun start` - Start production server
+- `bun test` - Run tests
+- `bun run lint` - Lint code
+- `bun run format` - Format code
+- `bun run db:migrate` - Run database migrations
+- `bun run db:generate` - Generate new migration
+- `bun run docs` - Generate API documentation
 
-### Why Vitest instead of Jest
+## 🏗 Project Structure
 
-I recommend using [Vitest][vitest] for unit and integration testing of your TypeScript code.
+```
+src/
+├── config/         # Configuration files
+├── handlers/    # Route controllers
+├── db/            # Database setup and migrations
+├── middleware/    # Express middleware
+├── routes/        # API routes
+├── services/      # Business logic
+├── types/         # TypeScript types
+└── utils/         # Utility functions
+```
 
-In 2023, my team and I gradually switched from Jest to [Vitest][vitest] in all the projects. We've found out that generally, Vitest is faster than Jest, especially for large test suits. Furthermore, Vitest has native support for ES modules, is easier to configure, and has a much nicer developer experience when used with TypeScript. For example, when working with mocks, spies and types.
+## 📝 API Documentation
 
-Nevertheless, the choice of specific tooling always depends on the specific requirements and characteristics of the project.
+API documentation is available at `/api-docs` when running the server. It includes:
 
-### ES Modules
+- Detailed endpoint descriptions
+- Request/response examples
+- Authentication requirements
+- Schema definitions
 
-This template uses native [ESM][esm]. Make sure to read [this][nodejs-esm], and [this][ts47-esm] first.
+## 🔒 Security
 
-If your project requires CommonJS, you will have to [convert to ESM][sindresorhus-esm].
+- JWT-based authentication
+- OAuth2 integration
+- Rate limiting
+- CORS protection
+- Input validation
+- XSS protection
 
-Please do not open issues for questions regarding CommonJS or ESM on this repo.
+## 🧪 Testing
 
-## Backers & Sponsors
+Run the test suite:
 
-Support this project by becoming a [sponsor][sponsor].
+```bash
+bun test
+```
 
-## License
+For coverage report:
 
-Licensed under the APLv2. See the [LICENSE](https://github.com/jsynowiec/node-typescript-boilerplate/blob/main/LICENSE) file for details.
+```bash
+bun run test:coverage
+```
 
-[ts-badge]: https://img.shields.io/badge/TypeScript-5.7-blue.svg
-[nodejs-badge]: https://img.shields.io/badge/Node.js-22-blue.svg
-[nodejs]: https://nodejs.org/dist/latest-v22.x/docs/api/
-[gha-badge]: https://github.com/jsynowiec/node-typescript-boilerplate/actions/workflows/nodejs.yml/badge.svg
-[gha-ci]: https://github.com/jsynowiec/node-typescript-boilerplate/actions/workflows/nodejs.yml
-[typescript]: https://www.typescriptlang.org/
-[typescript-5-7]: https://devblogs.microsoft.com/typescript/announcing-typescript-5-7/
-[license-badge]: https://img.shields.io/badge/license-APLv2-blue.svg
-[license]: https://github.com/jsynowiec/node-typescript-boilerplate/blob/main/LICENSE
-[sponsor-badge]: https://img.shields.io/badge/♥-Sponsor-fc0fb5.svg
-[sponsor]: https://github.com/sponsors/jsynowiec
-[eslint]: https://github.com/eslint/eslint
-[prettier]: https://prettier.io
-[volta]: https://volta.sh
-[volta-getting-started]: https://docs.volta.sh/guide/getting-started
-[volta-tomdale]: https://twitter.com/tomdale/status/1162017336699838467
-[gh-actions]: https://github.com/features/actions
-[repo-template-action]: https://github.com/jsynowiec/node-typescript-boilerplate/generate
-[esm]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
-[sindresorhus-esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
-[nodejs-esm]: https://nodejs.org/docs/latest-v16.x/api/esm.html
-[ts47-esm]: https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/#esm-nodejs
-[editorconfig]: https://editorconfig.org
-[vitest]: https://vitest.dev
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Node.js](https://nodejs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Express](https://expressjs.com/)
+- [Drizzle ORM](https://orm.drizzle.team/)
+- [PostgreSQL](https://www.postgresql.org/)
+
+
+## 🚀 Roadmap
+
+- [ ] Enhanced Analytics Dashboard
+- [ ] Integrated Payment System
+- [ ] Mobile App
+- [ ] AI-Powered Insights
+- [ ] Collaboration Tools
+- [ ] Marketplace Integration
+
+---
+
+Built with ❤️ by the Francis Amidu

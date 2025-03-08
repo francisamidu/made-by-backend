@@ -15,7 +15,7 @@ export class CommentHandler {
    * Create a new comment
    * @route POST /api/comments
    */
-  async create(
+  static async create(
     req: ApiRequest<{}, CreateCommentBody>,
     res: Response<ApiResponse<TComment>>,
   ) {
@@ -41,7 +41,7 @@ export class CommentHandler {
    * Get a comment by ID
    * @route GET /api/comments/:id
    */
-  async getById(
+  static async getById(
     req: ApiRequest<CommentPathParams>,
     res: Response<ApiResponse<TComment>>,
   ) {
@@ -64,7 +64,7 @@ export class CommentHandler {
    * Update a comment
    * @route PUT /api/comments/:id
    */
-  async update(
+  static async update(
     req: ApiRequest<CommentPathParams, UpdateCommentBody>,
     res: Response<ApiResponse<TComment>>,
   ) {
@@ -94,7 +94,7 @@ export class CommentHandler {
    * Delete a comment
    * @route DELETE /api/comments/:id
    */
-  async delete(
+  static async delete(
     req: ApiRequest<CommentPathParams>,
     res: Response<ApiResponse<{ success: boolean }>>,
   ) {
@@ -118,7 +118,7 @@ export class CommentHandler {
    * Get comments for a project
    * @route GET /api/comments/project/:projectId
    */
-  async getProjectComments(
+  static async getProjectComments(
     req: ApiRequest<CommentPathParams, {}, CommentQueryParams>,
     res: Response<ApiResponse<TPaginatedResponse<TComment>>>,
   ) {
@@ -152,7 +152,7 @@ export class CommentHandler {
    * Get comments by a creator
    * @route GET /api/comments/creator/:creatorId
    */
-  async getCreatorComments(
+  static async getCreatorComments(
     req: ApiRequest<CommentPathParams, {}, CommentQueryParams>,
     res: Response<ApiResponse<TPaginatedResponse<TComment>>>,
   ) {

@@ -1,26 +1,37 @@
 // src/routes/analytics.routes.ts
-import AsyncRouter from '@/utils/AsyncRouter';
 import { AnalyticsHandler } from '@/handlers/AnalyticsHandler';
 import { authenticate } from '@/middlewares/authenticate';
 import { Router } from 'express';
 import catchAsync from '@/utils/catchAsync';
 
 const router = Router();
-const handler = new AnalyticsHandler();
+router.get(
+  '/trending/creators',
+  catchAsync(AnalyticsHandler.getTrendingCreators),
+);
+router.get(
+  '/trending/projects',
+  catchAsync(AnalyticsHandler.getTrendingProjects),
+);
+router.get(
+  '/platform',
+  authenticate,
+  catchAsync(AnalyticsHandler.getPlatformMetrics),
+);
+router.get(
+  '/time',
+  authenticate,
+  catchAsync(AnalyticsHandler.getTimeBasedMetrics),
+);
 
 router.get(
   '/creators/:id',
   authenticate,
-  catchAsync(handler.getCreatorAnalytics),
+  catchAsync(AnalyticsHandler.getCreatorAnalytics),
 );
 router.get(
   '/projects/:id',
   authenticate,
-  catchAsync(handler.getProjectAnalytics),
+  catchAsync(AnalyticsHandler.getProjectAnalytics),
 );
-router.get('/trending/creators', catchAsync(handler.getTrendingCreators));
-router.get('/trending/projects', catchAsync(handler.getTrendingProjects));
-router.get('/platform', authenticate, catchAsync(handler.getPlatformMetrics));
-router.get('/time', authenticate, catchAsync(handler.getTimeBasedMetrics));
-
 export default router;

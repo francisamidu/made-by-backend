@@ -16,24 +16,16 @@ import { PlatformMetrics, TimeMetrics } from '@/types/analytics';
  * Handler for analytics-related operations
  */
 export class AnalyticsHandler {
-  private analyticsService: AnalyticsService;
-
-  constructor() {
-    this.analyticsService = new AnalyticsService();
-  }
-
   /**
    * Get analytics for a specific creator
    * @route GET /api/analytics/creators/:id
    */
-  async getCreatorAnalytics(
+  static async getCreatorAnalytics(
     req: ApiRequest<{ id?: string }>,
     res: Response<ApiResponse<TCreatorAnalytics>>,
   ) {
     const { id } = req.params;
-    const analytics = await this.analyticsService.getCreatorAnalytics(
-      String(id),
-    );
+    const analytics = await AnalyticsService.getCreatorAnalytics(String(id));
 
     res.json({
       data: analytics,
@@ -48,14 +40,12 @@ export class AnalyticsHandler {
    * Get analytics for a specific project
    * @route GET /api/analytics/projects/:id
    */
-  async getProjectAnalytics(
+  static async getProjectAnalytics(
     req: ApiRequest<{ id?: string }>,
     res: Response<ApiResponse<TProjectAnalytics>>,
   ) {
     const { id } = req.params;
-    const analytics = await this.analyticsService.getProjectAnalytics(
-      String(id),
-    );
+    const analytics = await AnalyticsService.getProjectAnalytics(String(id));
 
     res.json({
       data: analytics,
@@ -70,7 +60,7 @@ export class AnalyticsHandler {
    * Get trending creators with pagination
    * @route GET /api/analytics/trending/creators
    */
-  async getTrendingCreators(
+  static async getTrendingCreators(
     req: ApiRequest<{}, {}, { page?: string; limit?: string }>,
     res: Response<ApiResponse<TPaginatedResponse<TCreator>>>,
   ) {
@@ -81,10 +71,7 @@ export class AnalyticsHandler {
       throw new AppError('Invalid pagination parameters', 400);
     }
 
-    const trending = await this.analyticsService.getTrendingCreators(
-      page,
-      limit,
-    );
+    const trending = await AnalyticsService.getTrendingCreators(page, limit);
 
     res.json({
       data: trending,
@@ -102,7 +89,7 @@ export class AnalyticsHandler {
    * Get trending projects with pagination
    * @route GET /api/analytics/trending/projects
    */
-  async getTrendingProjects(
+  static async getTrendingProjects(
     req: ApiRequest<{}, {}, { page?: string; limit?: string }>,
     res: Response<ApiResponse<TPaginatedResponse<TProject>>>,
   ) {
@@ -113,10 +100,7 @@ export class AnalyticsHandler {
       throw new AppError('Invalid pagination parameters', 400);
     }
 
-    const trending = await this.analyticsService.getTrendingProjects(
-      page,
-      limit,
-    );
+    const trending = await AnalyticsService.getTrendingProjects(page, limit);
 
     res.json({
       data: trending,
@@ -134,11 +118,11 @@ export class AnalyticsHandler {
    * Get platform-wide metrics
    * @route GET /api/analytics/platform
    */
-  async getPlatformMetrics(
+  static async getPlatformMetrics(
     req: ApiRequest,
     res: Response<ApiResponse<PlatformMetrics>>,
   ) {
-    const metrics = await this.analyticsService.getPlatformMetrics();
+    const metrics = await AnalyticsService.getPlatformMetrics();
 
     res.json({
       data: metrics,
@@ -152,7 +136,7 @@ export class AnalyticsHandler {
    * Get time-based metrics
    * @route GET /api/analytics/time
    */
-  async getTimeBasedMetrics(
+  static async getTimeBasedMetrics(
     req: ApiRequest<{}, {}, { startDate: string; endDate: string }>,
     res: Response<ApiResponse<TimeMetrics[]>>,
   ) {
@@ -163,7 +147,7 @@ export class AnalyticsHandler {
       throw new AppError('Invalid date format. Use ISO 8601 format.', 400);
     }
 
-    const metrics = await this.analyticsService.getTimeBasedMetrics(
+    const metrics = await AnalyticsService.getTimeBasedMetrics(
       startDate,
       endDate,
     );

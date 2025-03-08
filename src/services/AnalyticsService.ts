@@ -7,7 +7,6 @@ import {
   TPaginatedResponse,
   TCreator,
   TProject,
-  TableSchema,
 } from '@/types/schema';
 
 /**
@@ -17,7 +16,9 @@ export class AnalyticsService {
   /**
    * Get analytics for a specific creator
    */
-  async getCreatorAnalytics(creatorId: string): Promise<TCreatorAnalytics> {
+  static async getCreatorAnalytics(
+    creatorId: string,
+  ): Promise<TCreatorAnalytics> {
     // Get creator's projects with engagement data
     const creatorProjects = await db
       .select({
@@ -62,7 +63,9 @@ export class AnalyticsService {
   /**
    * Get analytics for a specific project
    */
-  async getProjectAnalytics(projectId: string): Promise<TProjectAnalytics> {
+  static async getProjectAnalytics(
+    projectId: string,
+  ): Promise<TProjectAnalytics> {
     // Get project data
     const project = await db
       .select()
@@ -102,7 +105,7 @@ export class AnalyticsService {
   /**
    * Get trending creators based on engagement metrics
    */
-  async getTrendingCreators(
+  static async getTrendingCreators(
     page: number = 1,
     limit: number = 10,
   ): Promise<TPaginatedResponse<TCreator>> {
@@ -133,7 +136,7 @@ export class AnalyticsService {
   /**
    * Get trending projects based on engagement
    */
-  async getTrendingProjects(
+  static async getTrendingProjects(
     page: number = 1,
     limit: number = 10,
   ): Promise<TPaginatedResponse<TProject>> {
@@ -164,7 +167,7 @@ export class AnalyticsService {
   /**
    * Get platform-wide engagement metrics
    */
-  async getPlatformMetrics() {
+  static async getPlatformMetrics() {
     const [projectMetrics, creatorMetrics, followMetrics] = await Promise.all([
       db
         .select({
@@ -203,7 +206,7 @@ export class AnalyticsService {
   /**
    * Get engagement metrics for a specific time period
    */
-  async getTimeBasedMetrics(startDate: Date, endDate: Date) {
+  static async getTimeBasedMetrics(startDate: Date, endDate: Date) {
     const metrics = await db
       .select({
         date: sql<Date>`date_trunc('day', ${projects.createdAt})`,

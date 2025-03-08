@@ -14,6 +14,7 @@ import { TCreator } from '@/types/schema';
 export const authenticate = catchAsync(
   async (req: ApiRequest, _: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
+    console.log(authHeader);
     if (!authHeader?.startsWith('Bearer ')) {
       throw new UnauthorizedError('No token provided');
     }

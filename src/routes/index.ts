@@ -19,11 +19,5 @@ router.use('/comments', commentRoutes);
 router.use('/follows', followRoutes);
 router.use('/projects', projectRoutes);
 router.use('/search', searchRoutes);
-router.all('*', (_, res) => {
-  res.json({
-    message: 'Welcome to the Made By RESTAPI',
-    success: true,
-  });
-});
 
 export default router;

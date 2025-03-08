@@ -1,3 +1,5 @@
+import { TCreator } from './schema';
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
@@ -17,6 +19,10 @@ export interface OAuthConfig {
   clientSecret: string;
   callbackUrl: string;
   scope: string[];
+}
+export interface OAuthCallbackProfile {
+  creator?: TCreator;
+  tokens?: AuthTokens;
 }
 
 export interface OAuthProviders {

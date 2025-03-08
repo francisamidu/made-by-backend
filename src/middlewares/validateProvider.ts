@@ -1,3 +1,4 @@
+import OAUTH_CONFIG from '@/config/oauth';
 import { OAuthProvider } from '@/types/auth';
 import { AppError } from '@/utils/errors';
 import { NextFunction, Request, Response } from 'express';
@@ -9,7 +10,7 @@ export const validateProvider = (
   next: NextFunction,
 ) => {
   const provider = req.params.provider as OAuthProvider;
-  if (!['google', 'github', 'twitter'].includes(provider)) {
+  if (!OAUTH_CONFIG[provider]) {
     throw new AppError('Invalid provider', 400);
   }
   next();

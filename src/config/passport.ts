@@ -4,7 +4,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as TwitterStrategy } from 'passport-twitter';
 import { AuthService } from '@/services/AuthService';
-import { normalizeProfile } from './normalizeProfile';
+import { normalizeProfile } from '../utils/normalizeProfile';
 import { OAuthProfile } from '@/types/auth';
 
 export const configurePassport = () => {
@@ -42,7 +42,7 @@ export const configurePassport = () => {
       {
         clientID: OAUTH_CONFIG.github.clientId,
         clientSecret: OAUTH_CONFIG.github.clientSecret,
-        callbackURL: OAUTH_CONFIG.github.callbackUrl,
+        callbackURL: 'http://127.0.0.1:5000/api/auth/github/callback',
       },
       async (
         _accessToken: string,
@@ -65,17 +65,6 @@ export const configurePassport = () => {
           done(error as Error);
         }
       },
-    ),
-  );
-  passport.use(
-    'github',
-    new GitHubStrategy(
-      {
-        clientID: OAUTH_CONFIG.github.clientId,
-        clientSecret: OAUTH_CONFIG.github.clientSecret,
-        callbackURL: OAUTH_CONFIG.github.callbackUrl,
-      },
-      (accessToken, refreshToken, results, profile, verified) => {},
     ),
   );
   // Twitter Strategy

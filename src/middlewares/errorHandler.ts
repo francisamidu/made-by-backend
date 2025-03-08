@@ -29,6 +29,8 @@ export function errorHandler(
     ...(err instanceof AppError ? err : {}),
   });
 
+  console.log(err);
+
   // Set default error values for unknown errors
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Something went wrong';

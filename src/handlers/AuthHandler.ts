@@ -1,9 +1,9 @@
-import { NextFunction, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '@/services/AuthService';
 import { TCreator, TSocialLinks } from '@/types/schema';
 import { AppError } from '@/utils/errors';
 import { ApiRequest } from '@/types/request';
-import { ApiResponse } from '@/types/response';
+import { ApiResponse, OAuthCallbackResponse } from '@/types/response';
 import { OAuthProfile, AuthTokens, OAuthProvider } from '@/types/auth';
 import OAUTH_CONFIG from '@/config/oauth';
 import passport from 'passport';
@@ -25,9 +25,6 @@ export class AuthHandler {
     next: NextFunction,
   ): Promise<void> {
     const provider = req.params.provider as OAuthProvider;
-
-    req.session.returnTo = req.query.returnTo as string;
-
     passport.authenticate(provider, {
       scope: OAUTH_CONFIG[provider].scope,
     })(req, res, next);
@@ -99,6 +96,54 @@ export class AuthHandler {
         issuedAt: new Date().toISOString(),
       },
     });
+  }
+  // Helper method to set auth cookies
+  private static setAuthCookies(res: Response, tokens: any) {
+    res.cookie('accessToken', tokens.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+  }
+  /**
+   * Handle OAuth callback
+   * @route POST /api/auth/provider/callback
+   */
+  static async handleOAuthCallback(
+    req: Request,
+    res: Response<ApiResponse<OAuthCallbackResponse>>,
+  ) {
+    try {
+      const { creator, tokens } = req.user as any;
+
+      // Return tokens and user data as JSON
+      res.status(200).json({
+        success: true,
+        data: {
+          creator,
+          tokens,
+        },
+      });
+    } catch (error) {
+      res.status(401).json({
+        success: false,
+        error: 'Authentication failed',
+        data: null,
+      });
+    }
+  }
+  // Helper method to clear auth cookies
+  private static clearAuthCookies(res: Response) {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
   }
 
   /**

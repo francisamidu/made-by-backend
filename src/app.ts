@@ -12,6 +12,8 @@ import swaggerUi from 'swagger-ui-express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import listEndpoints from 'express-list-endpoints';
+import passport from 'passport';
+import { configurePassport } from './config/passport';
 
 /**
  * Global Configuration
@@ -42,6 +44,11 @@ app.use('/api', router);
 // Apply logging middleware
 app.use(loggerMiddleware);
 
+// Initialize passport and configure strategies
+configurePassport();
+app.use(passport.initialize());
+
+console.log(`${env.BACKEND_URL}/${env.GITHUB_CALLBACK_URL}`);
 /**
  * Debug endpoint to list all available routes
  */

@@ -1,5 +1,6 @@
 import { AuthHandler } from '@/handlers/AuthHandler';
 import { authenticate } from '@/middlewares/authenticate';
+import { oAuthCallback } from '@/middlewares/oauthCallback';
 import { validateProvider } from '@/middlewares/validateProvider';
 import catchAsync from '@/utils/catchAsync';
 import { Router } from 'express';
@@ -8,9 +9,15 @@ const router = Router();
 
 // OAuth routes for all providers
 router.get(
-  '/auth/:provider/login',
+  '/:provider/login',
   validateProvider,
   catchAsync(AuthHandler.handleOAuth),
+);
+router.get(
+  '/:provider/callback',
+  validateProvider,
+  oAuthCallback,
+  catchAsync(AuthHandler.handleOAuthCallback),
 );
 router.post('/login', catchAsync(AuthHandler.handleOAuthLogin));
 router.post('/refresh', catchAsync(AuthHandler.refreshToken));

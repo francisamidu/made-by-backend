@@ -29,17 +29,17 @@ const EnvSchema = z.object({
   // // OAuth - GitHub
   GITHUB_CLIENT_ID: z.string(),
   GITHUB_CLIENT_SECRET: z.string(),
-  GITHUB_CALLBACK_URL: z.string().url(),
+  GITHUB_CALLBACK_URL: z.string(),
 
   // // OAuth - Google
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
-  GOOGLE_CALLBACK_URL: z.string().url(),
+  GOOGLE_CALLBACK_URL: z.string(),
 
   // // OAuth - Twitter
   TWITTER_CLIENT_ID: z.string(),
   TWITTER_CLIENT_SECRET: z.string(),
-  TWITTER_CALLBACK_URL: z.string().url(),
+  TWITTER_CALLBACK_URL: z.string(),
 
   // // File Storage
   // CLOUDINARY_CLOUD_NAME: z.string(),
@@ -88,22 +88,22 @@ expand(config());
 /**
  * Validate environment variables against schema
  */
-// try {
-//   EnvSchema.parse(process.env);
-// } catch (error) {
-//   if (error instanceof ZodError) {
-//     let message = 'Missing or invalid environment variables:\n';
-//     error.issues.forEach((issue) => {
-//       message += `${issue.path.join('.')}: ${issue.message}\n`;
-//     });
-//     const e = new Error(message);
-//     e.stack = '';
-//     throw e;
-//   } else {
-//     console.error('Error validating environment variables:', error);
-//     throw error;
-//   }
-// }
+try {
+  EnvSchema.parse(process.env);
+} catch (error) {
+  if (error instanceof ZodError) {
+    let message = 'Missing or invalid environment variables:\n';
+    error.issues.forEach((issue) => {
+      message += `${issue.path.join('.')}: ${issue.message}\n`;
+    });
+    const e = new Error(message);
+    e.stack = '';
+    throw e;
+  } else {
+    console.error('Error validating environment variables:', error);
+    throw error;
+  }
+}
 
 /**
  * Export validated environment variables

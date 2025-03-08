@@ -28,7 +28,7 @@ export class ProjectHandler {
    * Get all projects
    * @route GET /api/projects
    */
-  async getAllProjects(
+  static async getAllProjects(
     req: ApiRequest<{}, {}, ProjectQueryParams>,
     res: Response<ApiResponse<TPaginatedResponse<TProjectResponse>>>,
   ) {
@@ -57,7 +57,7 @@ export class ProjectHandler {
    * Create new project
    * @route POST /api/projects
    */
-  async create(
+  static async create(
     req: ApiRequest<{ creatorId?: string }, TCreateProjectRequest>,
     res: Response<ApiResponse<TProject>>,
   ) {
@@ -77,7 +77,7 @@ export class ProjectHandler {
    * Get project by ID
    * @route GET /api/projects/:id
    */
-  async getById(
+  static async getById(
     req: ApiRequest<ProjectPathParams>,
     res: Response<ApiResponse<TProjectResponse>>,
   ) {
@@ -101,7 +101,7 @@ export class ProjectHandler {
    * Update project
    * @route PUT /api/projects/:id
    */
-  async update(
+  static async update(
     req: ApiRequest<ProjectPathParams, Partial<TCreateProjectRequest>>,
     res: Response<ApiResponse<TProject>>,
   ) {
@@ -127,7 +127,7 @@ export class ProjectHandler {
    * Delete project
    * @route DELETE /api/projects/:id
    */
-  async delete(
+  static async delete(
     req: ApiRequest<ProjectPathParams>,
     res: Response<ApiResponse<SuccessResponse>>,
   ) {
@@ -150,7 +150,7 @@ export class ProjectHandler {
    * Get projects by tags
    * @route GET /api/projects/tags
    */
-  async getByTags(
+  static async getByTags(
     req: ApiRequest<{}, {}, ProjectQueryParams>,
     res: Response<ApiResponse<TPaginatedResponse<TProjectResponse>>>,
   ) {
@@ -183,7 +183,7 @@ export class ProjectHandler {
    * Get sorted projects
    * @route GET /api/projects/sorted
    */
-  async getSorted(
+  static async getSorted(
     req: ApiRequest<{}, {}, ProjectQueryParams & { sortBy: TProjectSort }>,
     res: Response<ApiResponse<TPaginatedResponse<TProjectResponse>>>,
   ) {
@@ -211,7 +211,7 @@ export class ProjectHandler {
    * Toggle project like
    * @route POST /api/projects/:id/like
    */
-  async toggleLike(
+  static async toggleLike(
     req: ApiRequest<ProjectPathParams, ToggleLikeBody>,
     res: Response<ApiResponse<LikeResponse>>,
   ) {

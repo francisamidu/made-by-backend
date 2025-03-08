@@ -1,13 +1,11 @@
 // src/middlewares/auth.ts
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { AuthService } from '@/services/AuthService';
 import { AppError, UnauthorizedError } from '@/utils/errors';
 import { verifyJWT } from '@/utils/jwt';
-import { ApiRequest, ApiHandler } from '@/types/request';
+import { ApiRequest } from '@/types/request';
 import catchAsync from '@/utils/catchAsync';
-import { ApiResponse } from '@/types/response';
 import { TCreator } from '@/types/schema';
-import logger from '@/logger';
 
 /**
  * Authentication middleware

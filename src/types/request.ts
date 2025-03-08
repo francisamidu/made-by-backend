@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { NextFunction } from 'express-serve-static-core';
+import { Session } from 'express-session';
 import { ParsedQs } from 'qs'; // Express uses this for query parsing
 import { ApiResponse } from './response';
 import { TCreator } from './schema';
@@ -30,6 +31,15 @@ export interface ApiRequest<
   ReqB = any,
   ReqQ = QueryDictionary,
 > extends Request<P, ResB, ReqB, ReqQ> {
+  session: Session & {
+    returnTo?: string;
+    state?: string;
+    oauth?: {
+      provider?: 'google' | 'github' | 'twitter';
+      accessToken?: string;
+      refreshToken?: string;
+    };
+  };
   user?: TCreator;
 }
 

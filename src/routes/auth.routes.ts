@@ -1,20 +1,25 @@
 import { AuthHandler } from '@/handlers/AuthHandler';
 import { authenticate } from '@/middlewares/authenticate';
-import AsyncRouter from '@/utils/AsyncRouter';
+import { validateProvider } from '@/middlewares/validateProvider';
 import catchAsync from '@/utils/catchAsync';
 import { Router } from 'express';
 
 const router = Router();
-const handler = new AuthHandler();
 
-router.post('/login', catchAsync(handler.handleOAuthLogin));
-router.post('/refresh', catchAsync(handler.refreshToken));
-router.post('/logout', authenticate, catchAsync(handler.logout));
-router.get('/validate', authenticate, catchAsync(handler.validateSession));
+// OAuth routes for all providers
+router.get(
+  '/auth/:provider/login',
+  validateProvider,
+  catchAsync(AuthHandler.handleOAuth),
+);
+router.post('/login', catchAsync(AuthHandler.handleOAuthLogin));
+router.post('/refresh', catchAsync(AuthHandler.refreshToken));
+router.post('/logout', authenticate, catchAsync(AuthHandler.logout));
+router.get('/validate', authenticate, catchAsync(AuthHandler.validateSession));
 router.put(
   '/social-links',
   authenticate,
-  catchAsync(handler.updateSocialLinks),
+  catchAsync(AuthHandler.updateSocialLinks),
 );
 
 export default router;

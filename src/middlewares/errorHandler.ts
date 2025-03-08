@@ -33,7 +33,6 @@ export function errorHandler(
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Something went wrong';
 
-  console.log({ err });
   // Construct standardized error response object
   const response: ErrorResponse = {
     success: false,

@@ -1,26 +1,12 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { AuthService } from '@/services/AuthService';
 import { TCreator, TSocialLinks } from '@/types/schema';
 import { AppError } from '@/utils/errors';
 import { ApiRequest } from '@/types/request';
 import { ApiResponse } from '@/types/response';
-
-interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
-interface OAuthProfile {
-  provider: 'github' | 'google' | 'twitter' | 'linkedin';
-  profile: {
-    id: string;
-    displayName: string;
-    emails: Array<{ value: string }>;
-    photos: Array<{ value: string }>;
-    [key: string]: any;
-  };
-}
-
+import { OAuthProfile, AuthTokens, OAuthProvider } from '@/types/auth';
+import OAUTH_CONFIG from '@/config/oauth';
+import passport from 'passport';
 /**
  * Handler for authentication-related operations
  */
@@ -29,7 +15,28 @@ export class AuthHandler {
    * Handle OAuth authentication
    * @route POST /api/auth/oauth
    */
-  async handleOAuthLogin(
+  static async handleOAuth(
+    req: ApiRequest,
+    res: Response<
+      ApiResponse<{
+        provider: string;
+      }>
+    >,
+    next: NextFunction,
+  ): Promise<void> {
+    const provider = req.params.provider as OAuthProvider;
+
+    req.session.returnTo = req.query.returnTo as string;
+
+    passport.authenticate(provider, {
+      scope: OAUTH_CONFIG[provider].scope,
+    })(req, res, next);
+  }
+  /**
+   * Handle OAuth authentication
+   * @route POST /api/auth/oauth
+   */
+  static async handleOAuthLogin(
     req: ApiRequest<{}, {}, OAuthProfile>,
     res: Response<
       ApiResponse<{
@@ -70,7 +77,7 @@ export class AuthHandler {
    * Refresh access token
    * @route POST /api/auth/refresh
    */
-  async refreshToken(
+  static async refreshToken(
     req: ApiRequest<{}, {}, { refreshToken: string }>,
     res: Response<ApiResponse<AuthTokens>>,
   ) {
@@ -98,7 +105,7 @@ export class AuthHandler {
    * Update social links
    * @route PUT /api/auth/:id/social-links
    */
-  async updateSocialLinks(
+  static async updateSocialLinks(
     req: ApiRequest<{ id?: string }, { socialLinks: Partial<TSocialLinks> }>,
     res: Response<ApiResponse<TCreator>>,
   ) {
@@ -131,7 +138,7 @@ export class AuthHandler {
    * Validate session
    * @route POST /api/auth/validate
    */
-  async validateSession(
+  static async validateSession(
     req: ApiRequest<{}, { accessToken: string }>,
     res: Response<ApiResponse<TCreator>>,
   ) {
@@ -161,7 +168,7 @@ export class AuthHandler {
    * Logout
    * @route POST /api/auth/:id/logout
    */
-  async logout(
+  static async logout(
     req: ApiRequest<{ id?: string }>,
     res: Response<ApiResponse<{ success: boolean }>>,
   ) {

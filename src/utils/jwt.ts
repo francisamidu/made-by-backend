@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 import env from '@/env';
 import { JWTPayload } from '@/types/jwt';
+import { handleError } from './handleError';
 
 const JWT_SECRET = env.JWT_SECRET;
 
@@ -26,7 +26,11 @@ export const verifyJWT = async (token: string): Promise<JWTPayload> => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     return decoded;
-  } catch {
+  } catch (error) {
+    const err = handleError(error);
+    if (err.message != 'jwt malformed') {
+      throw err;
+    }
     return {
       id: undefined,
     };

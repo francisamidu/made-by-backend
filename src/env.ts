@@ -12,6 +12,7 @@ const EnvSchema = z.object({
     .enum(['development', 'production', 'test'])
     .default('development'),
   APP_PORT: z.coerce.number().default(3000),
+  BACKEND_URL: z.string().url(),
   // APP_URL: z.string().url(),
   API_PREFIX: z.string().default('/api/v1'),
 
@@ -21,29 +22,24 @@ const EnvSchema = z.object({
   // DATABASE_MAX_CONNECTIONS: z.coerce.number().default(10),
 
   // // JWT Configuration
-  // JWT_SECRET: z.string().min(32),
+  JWT_SECRET: z.string().min(32),
   // JWT_ACCESS_EXPIRY: z.string().default('15m'),
   // JWT_REFRESH_EXPIRY: z.string().default('7d'),
 
   // // OAuth - GitHub
-  // GITHUB_CLIENT_ID: z.string(),
-  // GITHUB_CLIENT_SECRET: z.string(),
-  // GITHUB_CALLBACK_URL: z.string().url(),
+  GITHUB_CLIENT_ID: z.string(),
+  GITHUB_CLIENT_SECRET: z.string(),
+  GITHUB_CALLBACK_URL: z.string().url(),
 
   // // OAuth - Google
-  // GOOGLE_CLIENT_ID: z.string(),
-  // GOOGLE_CLIENT_SECRET: z.string(),
-  // GOOGLE_CALLBACK_URL: z.string().url(),
-
-  // // OAuth - LinkedIn
-  // LINKEDIN_CLIENT_ID: z.string(),
-  // LINKEDIN_CLIENT_SECRET: z.string(),
-  // LINKEDIN_CALLBACK_URL: z.string().url(),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
+  GOOGLE_CALLBACK_URL: z.string().url(),
 
   // // OAuth - Twitter
-  // TWITTER_CLIENT_ID: z.string(),
-  // TWITTER_CLIENT_SECRET: z.string(),
-  // TWITTER_CALLBACK_URL: z.string().url(),
+  TWITTER_CLIENT_ID: z.string(),
+  TWITTER_CLIENT_SECRET: z.string(),
+  TWITTER_CALLBACK_URL: z.string().url(),
 
   // // File Storage
   // CLOUDINARY_CLOUD_NAME: z.string(),

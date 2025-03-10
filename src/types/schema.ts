@@ -43,6 +43,7 @@ export interface TCreator {
   name: string;
   avatar: string;
   bio?: string;
+  password: string;
   username?: string;
   location?: string;
   email?: string;

@@ -40,6 +40,42 @@ export class AuthService {
   }
 
   /**
+   * Creates a new user
+   * @param user - new user profile
+   * @returns Newly created creator object
+   */
+  static async createUser(user: any): Promise<TCreator | Partial<TCreator>> {
+    const professionalInfo: TProfessionalInfo = {
+      title: '',
+      skills: [],
+      tools: [],
+      collaborators: [],
+    };
+
+    const stats: TCreatorStats = {
+      projectViews: 0,
+      appreciations: 0,
+      followers: 0,
+      following: 0,
+    };
+
+    const hashedPassword = await hashPassword(user.password);
+
+    const result = (await db
+      .insert(creators)
+      .values({
+        name: user.fullname,
+        email: user.email,
+        password: hashedPassword,
+        professionalInfo,
+        stats,
+        isAvailableForHire: false,
+      })
+      .returning()) as TCreator[];
+
+    return sanitizeCreator(result[0]);
+  }
+  /**
    * Creates a new creator from OAuth profile
    * @param profile - OAuth provider profile
    * @returns Newly created creator object
@@ -141,7 +177,7 @@ export class AuthService {
     const result = (await db
       .select()
       .from(creators)
-      .where(eq(creators.id, decoded.id))
+      .where(eq(creators.id, decoded.id as string))
       .limit(1)) as TCreator[];
 
     if (!result[0]) {
@@ -188,7 +224,7 @@ export class AuthService {
     const result = (await db
       .select()
       .from(creators)
-      .where(eq(creators.id, decoded.id))
+      .where(eq(creators.id, decoded.id as string))
       .limit(1)) as TCreator[];
 
     return result[0] ? sanitizeCreator(result[0]) : null;

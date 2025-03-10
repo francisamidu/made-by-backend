@@ -109,4 +109,5 @@ export interface ProjectQueryParams {
 export interface RegistrationParams {
   email: string;
   password: string;
+  fullname?: string;
 }

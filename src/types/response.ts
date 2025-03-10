@@ -18,6 +18,6 @@ export interface ApiResponse<T = any> {
 }
 
 export interface OAuthCallbackResponse {
-  creator: Partial<TCreator>;
+  user: Partial<TCreator>;
   tokens: AuthTokens;
 }

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '@/services/AuthService';
 import { TCreator, TSocialLinks } from '@/types/schema';
 import { AppError } from '@/utils/errors';
-import { ApiRequest } from '@/types/request';
+import { ApiRequest, RegistrationParams } from '@/types/request';
 import { ApiResponse, OAuthCallbackResponse } from '@/types/response';
 import { OAuthProfile, AuthTokens, OAuthProvider } from '@/types/auth';
 import OAUTH_CONFIG from '@/config/oauth';
@@ -30,41 +30,69 @@ export class AuthHandler {
     })(req, res, next);
   }
   /**
-   * Handle OAuth authentication
-   * @route POST /api/auth/oauth
+   * Handle Login and Password authentication
+   * @route POST /api/auth/login
    */
-  static async handleOAuthLogin(
-    req: ApiRequest<{}, {}, OAuthProfile>,
+  static async handleLogin(
+    req: ApiRequest,
     res: Response<
       ApiResponse<{
-        creator: TCreator;
+        user: TCreator;
         tokens: AuthTokens;
       }>
     >,
   ) {
-    const { provider, profile } = req.body;
+    const { user } = req.body;
 
-    if (!provider || !profile) {
-      throw new AppError('Invalid OAuth data', 400);
-    }
-
-    const creator = (await AuthService.authenticateWithOAuth(
-      profile,
-    )) as TCreator;
-
-    if (!creator) {
+    if (!user) {
       throw new AppError('Authentication failed', 401);
     }
 
-    const tokens = await AuthService.generateAuthTokens(creator);
+    const tokens = await AuthService.generateAuthTokens(user);
+
+    console.log(user);
+    // res.json({
+    //   data: {
+    //     user,
+    //     tokens,
+    //   },
+    //   meta: {
+    //     provider,
+    //     authenticatedAt: new Date().toISOString(),
+    //   },
+    // });
+  }
+  /**
+   * Handle Username and Password registration
+   * @route POST /api/auth/signup
+   */
+  static async handleRegister(
+    req: ApiRequest,
+    res: Response<
+      ApiResponse<{
+        user: TCreator;
+      }>
+    >,
+  ) {
+    const { email, password, fullname } = req.body as RegistrationParams;
+
+    const user = await AuthService.findByEmail(email);
+    if (user) {
+      throw new AppError('User already exists', 401);
+    }
+
+    const newUser = {
+      email,
+      fullname,
+      password,
+    };
+    const createdUser = (await AuthService.createUser(newUser)) as TCreator;
 
     res.json({
       data: {
-        creator,
-        tokens,
+        user: createdUser,
       },
       meta: {
-        provider,
         authenticatedAt: new Date().toISOString(),
       },
     });
@@ -122,13 +150,13 @@ export class AuthHandler {
     res: Response<ApiResponse<OAuthCallbackResponse>>,
   ) {
     try {
-      const { creator, tokens } = req.user as any;
+      const { user, tokens } = req.user as any;
 
       // Return tokens and user data as JSON
       res.status(200).json({
         success: true,
         data: {
-          creator,
+          user,
           tokens,
         },
       });

@@ -59,4 +59,59 @@ export class NotFoundError extends AppError {
   }
 }
 
-// Add more as needed
+export class ValidationError extends Error {
+  public statusCode: number;
+  public errors: string[];
+  public isOperational: boolean;
+
+  /**
+   * Creates a new ValidationError instance
+   * @param errors - Array of error messages
+   * @param statusCode - HTTP status code (default: 400)
+   * @param isOperational - Flag indicating if this is an operational error (default: true)
+   */
+  constructor(
+    errors: string | string[],
+    statusCode: number = 400,
+    isOperational: boolean = true,
+  ) {
+    // Normalize errors to an array
+    const errorMessages = Array.isArray(errors) ? errors : [errors];
+
+    // Use the first error message as the main error message
+    super(errorMessages[0]);
+
+    // Restore prototype chain
+    Object.setPrototypeOf(this, new.target.prototype);
+
+    this.name = 'ValidationError';
+    this.statusCode = statusCode;
+    this.errors = errorMessages;
+    this.isOperational = isOperational;
+
+    // Capture stack trace
+    Error.captureStackTrace(this, this.constructor);
+  }
+
+  /**
+   * Create a validation error from an object of field-based errors
+   * @param errorMap - Object with field names as keys and error messages as values
+   * @returns ValidationError
+   */
+  static fromMap(errorMap: Record<string, string>): ValidationError {
+    const errors = Object.entries(errorMap).map(
+      ([field, message]) => `${field}: ${message}`,
+    );
+
+    return new ValidationError(errors);
+  }
+
+  /**
+   * Create a validation error with a single message
+   * @param message - Error message
+   * @returns ValidationError
+   */
+  static single(message: string): ValidationError {
+    return new ValidationError([message]);
+  }
+}

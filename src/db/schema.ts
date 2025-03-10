@@ -33,6 +33,7 @@ export const creators = baseSchema.table(
     name: varchar('name', { length: 100 }).notNull(),
     avatar: text('avatar').notNull(),
     bio: text('bio'),
+    password: text('password'),
     username: varchar('username', { length: 50 }).unique(),
     location: varchar('location', { length: 100 }),
     email: varchar('email', { length: 100 }).unique(),

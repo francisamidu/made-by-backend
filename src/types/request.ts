@@ -105,3 +105,8 @@ export interface ProjectQueryParams {
   page?: string;
   limit?: string;
 }
+
+export interface RegistrationParams {
+  email: string;
+  password: string;
+}

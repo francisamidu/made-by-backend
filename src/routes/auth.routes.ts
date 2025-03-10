@@ -2,6 +2,7 @@ import { AuthHandler } from '@/handlers/AuthHandler';
 import { authenticate } from '@/middlewares/authenticate';
 import { oAuthCallback } from '@/middlewares/oauthCallback';
 import { validateProvider } from '@/middlewares/validateProvider';
+import { validateRegistration } from '@/middlewares/validateRegistration';
 import catchAsync from '@/utils/catchAsync';
 import { Router } from 'express';
 
@@ -19,7 +20,16 @@ router.get(
   oAuthCallback,
   catchAsync(AuthHandler.handleOAuthCallback),
 );
-router.post('/login', catchAsync(AuthHandler.handleOAuthLogin));
+router.post(
+  '/login',
+  validateRegistration,
+  catchAsync(AuthHandler.handleOAuthLogin),
+);
+router.post(
+  '/signup',
+  validateRegistration,
+  catchAsync(AuthHandler.handleOAuthLogin),
+);
 router.post('/refresh', catchAsync(AuthHandler.refreshToken));
 router.post('/logout', authenticate, catchAsync(AuthHandler.logout));
 router.get('/validate', authenticate, catchAsync(AuthHandler.validateSession));

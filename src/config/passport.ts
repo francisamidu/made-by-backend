@@ -1,6 +1,7 @@
 import OAUTH_CONFIG from '@/config/oauth';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
+import { ExtractJwt, Strategy as JWTStrategy } from 'passport-jwt';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as TwitterStrategy } from 'passport-twitter';
@@ -12,6 +13,7 @@ import { db } from '@/db';
 import { creators } from '@/db/schema';
 import { comparePassword } from '@/utils/password';
 import { eq } from 'drizzle-orm';
+import env from '@/env';
 
 export const configurePassport = () => {
   //Local - Passport strategy
@@ -20,8 +22,9 @@ export const configurePassport = () => {
       {
         usernameField: 'email',
         passwordField: 'password',
+        passReqToCallback: true,
       },
-      async (email, password, done) => {
+      async (_request, email, password, done) => {
         try {
           const [user] = await db
             .select()
@@ -29,7 +32,7 @@ export const configurePassport = () => {
             .where(eq(creators.email, email));
 
           if (!user) {
-            return done(new AppError('No user found', 404), false);
+            done(new AppError('No user found', 404), false);
           }
 
           const isValidPassword = await comparePassword(
@@ -38,19 +41,50 @@ export const configurePassport = () => {
           );
 
           if (!isValidPassword) {
-            return done(
-              new UnauthorizedError("Password's do not match"),
-              false,
-            );
+            done(new UnauthorizedError("Password's do not match"), false);
           }
 
-          return done(null, user);
+          done(null, user);
         } catch (error) {
-          return done(error);
+          done(error);
         }
       },
     ),
   );
+
+  passport.use(
+    new JWTStrategy(
+      {
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        secretOrKey: env.JWT_SECRET,
+      },
+      async (payload, done) => {
+        try {
+          const [user] = await db
+            .select()
+            .from(creators)
+            .where(eq(creators.id, payload.id));
+
+          if (!user) {
+            done(new AppError('No user found', 404), false);
+          }
+          done(null, user);
+        } catch (error) {
+          done(error);
+        }
+      },
+    ),
+  );
+
+  // passport.serializeUser((user, done) => {
+  //   done(null, user);
+  // });
+  // passport.deserializeUser((id, done) => {
+  //   db.select()
+  //     .from(creators)
+  //     .where(eq(creators.id, id as string))
+  //     .then((user) => done(null, user));
+  // });
   // Google Strategy
   passport.use(
     'google',

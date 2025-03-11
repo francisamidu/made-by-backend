@@ -33,7 +33,6 @@ router.get(
 );
 router.get(
   '/:provider/callback',
-  validateProvider,
   oAuthCallback,
   catchAsync(AuthHandler.handleOAuthCallback),
 );

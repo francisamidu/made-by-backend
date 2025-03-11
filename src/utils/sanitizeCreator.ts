@@ -12,7 +12,7 @@ export const sanitizeCreator = (creator: TCreator): Partial<TCreator> => {
 
   // Remove sensitive fields
   const sensitiveFields = [
-    'passwordHash',
+    'password',
     'refreshToken',
     'verificationToken',
     'resetPasswordToken',

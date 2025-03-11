@@ -12,8 +12,9 @@ export const validateAuth = async (
 ) => {
   const { email, password } = req.body as RegistrationParams;
   if (!email || !password) {
-    throw new BadRequestError('Email and password are required');
+    next(new BadRequestError('Email and password are required'));
   }
+
   next();
 };
 export class ValidationMiddleware {

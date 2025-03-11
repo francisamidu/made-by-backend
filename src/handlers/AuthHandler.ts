@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '@/services/AuthService';
 import { TCreator, TSocialLinks } from '@/types/schema';
-import { AppError } from '@/utils/errors';
+import { AppError, UnauthorizedError } from '@/utils/errors';
 import { ApiRequest, RegistrationParams } from '@/types/request';
 import { ApiResponse, OAuthCallbackResponse } from '@/types/response';
 import { OAuthProfile, AuthTokens, OAuthProvider } from '@/types/auth';
 import OAUTH_CONFIG from '@/config/oauth';
 import passport from 'passport';
+import { comparePassword } from '@/utils/password';
+import { sanitizeCreator } from '@/utils/sanitizeCreator';
 /**
  * Handler for authentication-related operations
  */
@@ -42,25 +44,44 @@ export class AuthHandler {
       }>
     >,
   ) {
-    const { user } = req.body;
+    const { email, password } = req.body;
+
+    let user = (await AuthService.findByEmail(email)) as TCreator;
 
     if (!user) {
-      throw new AppError('Authentication failed', 401);
+      throw new AppError('User not failed', 404);
+    }
+    const isAuthorized = await comparePassword(
+      password,
+      user.password as string,
+    );
+    user = sanitizeCreator(user) as TCreator;
+    if (!isAuthorized) {
+      throw new UnauthorizedError("Passwords don't match");
     }
 
     const tokens = await AuthService.generateAuthTokens(user);
+    // Update cookies
+    res.cookie('accessToken', tokens.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    });
 
-    console.log(user);
-    // res.json({
-    //   data: {
-    //     user,
-    //     tokens,
-    //   },
-    //   meta: {
-    //     provider,
-    //     authenticatedAt: new Date().toISOString(),
-    //   },
-    // });
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      data: {
+        user,
+        tokens,
+      },
+    });
   }
   /**
    * Handle Username and Password registration
@@ -95,6 +116,7 @@ export class AuthHandler {
       meta: {
         authenticatedAt: new Date().toISOString(),
       },
+      success: true,
     });
   }
 
@@ -125,22 +147,7 @@ export class AuthHandler {
       },
     });
   }
-  // Helper method to set auth cookies
-  private static setAuthCookies(res: Response, tokens: any) {
-    res.cookie('accessToken', tokens.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
 
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-  }
   /**
    * Handle OAuth callback
    * @route POST /api/auth/provider/callback
@@ -168,12 +175,6 @@ export class AuthHandler {
       });
     }
   }
-  // Helper method to clear auth cookies
-  private static clearAuthCookies(res: Response) {
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
-  }
-
   /**
    * Update social links
    * @route PUT /api/auth/:id/social-links

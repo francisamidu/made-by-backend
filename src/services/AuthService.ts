@@ -64,6 +64,7 @@ export class AuthService {
     const result = (await db
       .insert(creators)
       .values({
+        avatar: '',
         name: user.fullname,
         email: user.email,
         password: hashedPassword,
@@ -131,7 +132,7 @@ export class AuthService {
       .where(eq(creators.email, email))
       .limit(1)) as TCreator[];
 
-    return result[0] ? sanitizeCreator(result[0]) : null;
+    return result[0];
   }
 
   /**

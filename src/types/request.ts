@@ -4,6 +4,21 @@ import { Session } from 'express-session';
 import { ParsedQs } from 'qs'; // Express uses this for query parsing
 import { ApiResponse } from './response';
 import { TCreator } from './schema';
+import { z } from 'zod';
+
+// Define project creation schema
+export const CreateCreatorSchema = z.object({
+  name: z.string().min(3, 'Title must be at least 3 characters'),
+  email: z.string().min(3, 'Email is required'),
+  // Add other fields with validations
+});
+// Define project creation schema
+export const CreateProjectSchema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters'),
+  description: z.string().optional(),
+  tags: z.array(z.string()).max(5, 'Maximum 5 tags allowed'),
+  // Add other fields with validations
+});
 
 /**
  * Params dictionary should match Express's ParamsDictionary
@@ -40,7 +55,7 @@ export interface ApiRequest<
       refreshToken?: string;
     };
   };
-  user?: TCreator;
+  user?: Pick<TCreator, 'id' | 'email'>;
 }
 
 /**

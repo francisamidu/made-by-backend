@@ -1,0 +1,1 @@
+ALTER TABLE "madeby"."creators" ADD COLUMN "password" text;

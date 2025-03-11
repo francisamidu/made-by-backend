@@ -66,6 +66,7 @@ export class CreatorService {
       .insert(creators)
       .values({
         ...data,
+        avatar: '',
         stats: {
           projectViews: 0,
           appreciations: 0,

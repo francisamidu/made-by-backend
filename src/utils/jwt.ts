@@ -11,7 +11,12 @@ const JWT_SECRET = env.JWT_SECRET;
  * @param expiresIn - Token expiration time
  * @returns Signed JWT token
  */
-export const generateJWT = (payload: JWTPayload): string => {
+export const generateJWT = (payload: JWTPayload, access = false): string => {
+  if (access) {
+    return jwt.sign(payload, JWT_SECRET, {
+      expiresIn: '15m',
+    });
+  }
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: '7d',
   });
@@ -22,9 +27,9 @@ export const generateJWT = (payload: JWTPayload): string => {
  * @param token - JWT token to verify
  * @returns Decoded token payload
  */
-export const verifyJWT = async (token: string): Promise<JWTPayload> => {
+export const verifyJWT = async (token: string): Promise<any> => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET);
     return decoded;
   } catch (error) {
     const err = handleError(error);

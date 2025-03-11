@@ -14,7 +14,6 @@ import { fileURLToPath } from 'url';
 import listEndpoints from 'express-list-endpoints';
 import passport from 'passport';
 import { configurePassport } from './config/passport';
-import { requestSizeLogger } from './middlewares/requestSizeLogger';
 
 /**
  * Global Configuration
@@ -113,7 +112,8 @@ const server = app.listen(env.APP_PORT, () => {
  * Logs the error and exits the process
  */
 process.on('uncaughtException', (err) => {
-  logger.error('Uncaught Exception:', err);
+  console.log(err);
+  // logger.error('Uncaught Exception:', err);
   process.exit(1);
 });
 
@@ -123,7 +123,7 @@ process.on('uncaughtException', (err) => {
  */
 process.on('unhandledRejection', (reason, promise) => {
   console.log(reason);
-  // logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   server.close(() => {
     process.exit(1);
   });
